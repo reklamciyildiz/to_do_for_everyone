@@ -74,20 +74,14 @@ export function TeamMembers() {
           throw new Error(`Member with ID ${editingMember.id} not found in team ${currentTeam.id}`);
         }
 
-        const updated = await updateMember(currentTeam.id, editingMember.id, memberData);
-        console.log('Update result:', updated);
-        
-        if (!updated) {
-          throw new Error('Failed to update member - no result returned');
-        }
+        // Update member - the state will be updated via the context
+        updateMember(currentTeam.id, editingMember.id, memberData);
+        console.log('Member update triggered');
       } else {
         console.log('Adding new member...');
-        const added = await addMember(currentTeam.id, memberData);
-        console.log('Add result:', added);
-        
-        if (!added) {
-          throw new Error('Failed to add member - no result returned');
-        }
+        // Add member - the state will be updated via the context
+        addMember(currentTeam.id, memberData);
+        console.log('Member add triggered');
       }
 
       // Reset form
@@ -130,10 +124,9 @@ export function TeamMembers() {
       const confirmed = window.confirm('Are you sure you want to remove this member?');
       if (!confirmed) return;
       
-      const success = removeMember(currentTeam.id, memberId);
-      if (!success) {
-        throw new Error('Failed to remove member');
-      }
+      // Remove member - the state will be updated via the context
+      removeMember(currentTeam.id, memberId);
+      console.log('Member removal triggered');
     } catch (error) {
       console.error('Error removing member:', error);
       // You might want to show an error toast/message to the user here
