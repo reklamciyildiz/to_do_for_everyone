@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useState } from 'react';
-import { DragDropContext, Droppable, Draggable, type DraggableProvided, type DroppableProvided, type DropResult, type DraggableStateSnapshot, type DroppableStateSnapshot } from './DragAndDrop';
+import { DragDropContext, Droppable, Draggable } from './DragAndDrop';
 import { TaskCard } from '@/components/TaskCard';
 import { useTaskContext, TaskStatus } from '@/components/TaskContext';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,7 @@ export function TaskBoard() {
   const { tasks, updateTask, currentTeam } = useTaskContext();
   const [showCreateTask, setShowCreateTask] = useState<{ status?: TaskStatus } | false>(false);
 
-  const onDragEnd = (result: DropResult) => {
+  const onDragEnd = (result: any) => {
     if (!result.destination) return;
 
     const taskId = result.draggableId;

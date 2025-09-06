@@ -12,12 +12,7 @@ export const DragDropContext: any = Dnd.DragDropContext;
 export const Droppable: any = Dnd.Droppable;
 export const Draggable: any = Dnd.Draggable;
 
-export type { 
-  DraggableProvided,
-  DroppableProvided,
-  DropResult,
-  DraggableStateSnapshot,
-  DroppableStateSnapshot
-} from '@hello-pangea/dnd';
-
+// Do not re-export the DnD types here — re-exporting them pulls the
+// @hello-pangea/dnd type declarations (and their React types) into the
+// project which can cause @types/react mismatches during build.
 export default Dnd;
