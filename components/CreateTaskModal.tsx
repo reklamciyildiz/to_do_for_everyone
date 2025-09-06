@@ -34,7 +34,7 @@ export function CreateTaskModal({ open, onClose, defaultStatus }: CreateTaskModa
   const [status, setStatus] = useState<TaskStatus>(defaultStatus || 'todo');
   const [priority, setPriority] = useState<TaskPriority>('medium');
   const [dueDate, setDueDate] = useState<Date>();
-  const [assigneeId, setAssigneeId] = useState<string>();
+  const [assigneeId, setAssigneeId] = useState<string>("unassigned");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +47,7 @@ export function CreateTaskModal({ open, onClose, defaultStatus }: CreateTaskModa
       status,
       priority,
       dueDate,
-      assigneeId,
+      assigneeId: assigneeId === "unassigned" ? undefined : assigneeId,
       teamId: currentTeam.id
     });
 
@@ -57,7 +57,7 @@ export function CreateTaskModal({ open, onClose, defaultStatus }: CreateTaskModa
     setStatus(defaultStatus || 'todo');
     setPriority('medium');
     setDueDate(undefined);
-    setAssigneeId(undefined);
+    setAssigneeId("unassigned");
     onClose();
   };
 
@@ -151,12 +151,12 @@ export function CreateTaskModal({ open, onClose, defaultStatus }: CreateTaskModa
 
             <div className="space-y-2">
               <Label>Assignee</Label>
-              <Select value={assigneeId} onValueChange={setAssigneeId}>
+              <Select value={assigneeId || "unassigned"} onValueChange={setAssigneeId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select assignee" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Unassigned</SelectItem>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
                   {currentTeam?.members.map((member) => (
                     <SelectItem key={member.id} value={member.id}>
                       {member.name}

@@ -12,9 +12,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Settings, LogOut, User } from 'lucide-react';
 import { useTaskContext } from '@/components/TaskContext';
+import { useView } from '@/components/ViewContext';
 
 export function UserMenu() {
   const { currentUser } = useTaskContext();
+  const { setCurrentView } = useView();
 
   if (!currentUser) return null;
 
@@ -34,24 +36,30 @@ export function UserMenu() {
             <p className="text-sm font-medium">{currentUser.name}</p>
             <p className="text-xs text-muted-foreground">{currentUser.email}</p>
             <div className="flex items-center gap-1 mt-1">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="w-2 h-2 bg-green-500 rounded-full" />
               <span className="text-xs text-muted-foreground">Online</span>
             </div>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer">
-          <User className="mr-2 h-4 w-4" />
-          <span>Profile</span>
+        <DropdownMenuItem asChild onClick={() => setCurrentView('profile')} className="cursor-pointer">
+          <div className="flex items-center">
+            <User className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </div>
         </DropdownMenuItem>
-        <DropdownMenuItem className="cursor-pointer">
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Settings</span>
+        <DropdownMenuItem asChild onClick={() => setCurrentView('settings')} className="cursor-pointer">
+          <div className="flex items-center">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </div>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600">
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Log out</span>
+        <DropdownMenuItem asChild className="cursor-pointer text-red-600 focus:text-red-600">
+          <div className="flex items-center">
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Log out</span>
+          </div>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

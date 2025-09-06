@@ -7,11 +7,12 @@ import { TaskList } from '@/components/TaskList';
 import { Analytics } from '@/components/Analytics';
 import { Settings } from '@/components/Settings';
 import { Header } from '@/components/Header';
+import { Profile } from '@/components/Profile';
 
-type ViewType = 'board' | 'list' | 'analytics' | 'settings';
+import { useView } from '@/components/ViewContext';
 
 export function Dashboard() {
-  const [currentView, setCurrentView] = useState<ViewType>('board');
+  const { currentView, setCurrentView } = useView();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const renderView = () => {
@@ -24,6 +25,8 @@ export function Dashboard() {
         return <Analytics />;
       case 'settings':
         return <Settings />;
+      case 'profile':
+        return <Profile />;
       default:
         return <TaskBoard />;
     }
