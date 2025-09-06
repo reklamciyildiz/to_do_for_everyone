@@ -2,6 +2,7 @@
 
 import { Header } from '@/components/Header';
 import { Sidebar } from '@/components/Sidebar';
+import { ViewType } from '@/components/ViewContext';
 import { useState } from 'react';
 
 export default function ProfileLayout({
@@ -10,7 +11,7 @@ export default function ProfileLayout({
   children: React.ReactNode;
 }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<'board' | 'list' | 'analytics' | 'settings'>('settings');
+  const [currentView, setCurrentView] = useState<ViewType>('settings');
 
   return (
     <div className="flex h-screen overflow-hidden">

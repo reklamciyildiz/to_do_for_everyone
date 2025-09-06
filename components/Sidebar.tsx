@@ -46,6 +46,7 @@ export function Sidebar({ currentView, onViewChange, isOpen, onCloseSidebar }: S
     { id: 'list', label: 'List View', icon: List, count: tasks.length },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'team', label: 'Team', icon: Users },
+    { id: 'profile', label: 'Profile', icon: UserPlus },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
