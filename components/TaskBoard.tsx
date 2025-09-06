@@ -18,7 +18,7 @@ const columns: { id: TaskStatus; title: string; color: string }[] = [
   { id: 'done', title: 'Done', color: 'bg-green-50 dark:bg-green-900/20' }
 ];
 
-export function TaskBoard() {
+export function TaskBoard(): JSX.Element {
   const { tasks, updateTask, currentTeam } = useTaskContext();
   const [showCreateTask, setShowCreateTask] = useState<{ status?: TaskStatus } | false>(false);
 
@@ -69,7 +69,7 @@ export function TaskBoard() {
                     className="h-8 w-8 p-0 opacity-60 hover:opacity-100"
                     onClick={() => setShowCreateTask({ status: column.id })}
                   >
-                  sdfsdfd  <Plus className="h-4 w-4" />
+                    <Plus className="h-4 w-4" />
                   </Button>
                 </div>
 
