@@ -1,7 +1,8 @@
 'use client';
 
+import * as React from 'react';
 import { useState } from 'react';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable, Draggable, type DraggableProvided, type DroppableProvided, type DropResult, type DraggableStateSnapshot, type DroppableStateSnapshot } from './DragAndDrop';
 import { TaskCard } from '@/components/TaskCard';
 import { useTaskContext, TaskStatus } from '@/components/TaskContext';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +22,7 @@ export function TaskBoard() {
   const { tasks, updateTask, currentTeam } = useTaskContext();
   const [showCreateTask, setShowCreateTask] = useState<{ status?: TaskStatus } | false>(false);
 
-  const onDragEnd = (result: any) => {
+  const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
     const taskId = result.draggableId;
@@ -68,12 +69,12 @@ export function TaskBoard() {
                     className="h-8 w-8 p-0 opacity-60 hover:opacity-100"
                     onClick={() => setShowCreateTask({ status: column.id })}
                   >
-                    <Plus className="h-4 w-4" />
+                  sdfsdfd  <Plus className="h-4 w-4" />
                   </Button>
                 </div>
 
                 <Droppable droppableId={column.id}>
-                  {(provided, snapshot) => (
+                  {(provided: any, snapshot: any) => (
                     <div
                       ref={provided.innerRef}
                       {...provided.droppableProps}
@@ -90,7 +91,7 @@ export function TaskBoard() {
                             draggableId={task.id} 
                             index={index}
                           >
-                            {(provided, snapshot) => (
+                            {(provided: any, snapshot: any) => (
                               <div
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
