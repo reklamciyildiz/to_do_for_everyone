@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState } from 'react';
 
-type ViewType = 'board' | 'list' | 'analytics' | 'settings' | 'profile';
+export type ViewType = 'board' | 'list' | 'analytics' | 'settings' | 'profile' | 'team';
 
 interface ViewContextType {
   currentView: ViewType;

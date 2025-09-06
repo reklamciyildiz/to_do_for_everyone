@@ -9,15 +9,24 @@ import {
   BarChart3, 
   Settings, 
   Users, 
+  UserPlus,
   Calendar,
   Tag,
   Archive
 } from 'lucide-react';
 import { useTaskContext } from '@/components/TaskContext';
+import { ViewType } from '@/components/ViewContext';
+
+interface MenuItem {
+  id: ViewType;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  count?: number;
+}
 
 interface SidebarProps {
-  currentView: string;
-  onViewChange: (view: 'board' | 'list' | 'analytics' | 'settings') => void;
+  currentView: ViewType;
+  onViewChange: (view: ViewType) => void;
   isOpen: boolean;
   onCloseSidebar: () => void;
 }
@@ -32,10 +41,11 @@ export function Sidebar({ currentView, onViewChange, isOpen, onCloseSidebar }: S
     done: tasks.filter(t => t.status === 'done').length
   };
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     { id: 'board', label: 'Task Board', icon: LayoutDashboard, count: tasks.length },
     { id: 'list', label: 'List View', icon: List, count: tasks.length },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'team', label: 'Team', icon: Users },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -113,7 +123,7 @@ export function Sidebar({ currentView, onViewChange, isOpen, onCloseSidebar }: S
                   "w-full justify-start gap-3 h-11 px-3",
                   currentView === item.id && "bg-secondary text-secondary-foreground font-medium"
                 )}
-                onClick={() => onViewChange(item.id as any)}
+                onClick={() => onViewChange(item.id)}
               >
                 <item.icon className="h-4 w-4" />
                 <span className="flex-1 text-left">{item.label}</span>

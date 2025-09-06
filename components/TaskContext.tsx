@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { addDays } from 'date-fns';
 
 export type TaskStatus = 'todo' | 'progress' | 'review' | 'done';
@@ -46,6 +46,8 @@ export interface Team {
   createdAt: Date;
 }
 
+interface MemberFormData extends Omit<TeamMember, 'id' | 'isOnline'> {}
+
 interface TaskContextType {
   tasks: Task[];
   teams: Team[];
@@ -56,6 +58,12 @@ interface TaskContextType {
   deleteTask: (id: string) => void;
   setCurrentTeam: (teamId: string) => void;
   addTeam: (team: Omit<Team, 'id' | 'createdAt'>) => void;
+  // Member management
+  addMember: (teamId: string, member: MemberFormData) => void;
+  updateMember: (teamId: string, memberId: string, updates: Partial<MemberFormData>) => void;
+  removeMember: (teamId: string, memberId: string) => void;
+  getTeamMembers: (teamId: string) => TeamMember[];
+  // For backward compatibility
   inviteMember: (teamId: string, member: Omit<TeamMember, 'id' | 'isOnline'>) => void;
 }
 
@@ -332,19 +340,150 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     setTeams(prev => [...prev, newTeam]);
   };
 
-  const inviteMember = (teamId: string, memberData: Omit<TeamMember, 'id' | 'isOnline'>) => {
-    const newMember: TeamMember = {
-      ...memberData,
-      id: `user-${Date.now()}`,
-      isOnline: false
-    };
-    
-    setTeams(prev => prev.map(team => 
-      team.id === teamId 
-        ? { ...team, members: [...team.members, newMember] }
-        : team
-    ));
-  };
+  // Add a new member to a team
+  const addMember = useCallback((teamId: string, memberData: MemberFormData) => {
+    console.group('Adding Member');
+    try {
+      console.log('Adding member to team:', teamId);
+      console.log('Member data:', memberData);
+      
+      const newMember: TeamMember = {
+        ...memberData,
+        id: `user-${Date.now()}`,
+        isOnline: false,
+        avatar: memberData.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(memberData.name)}`
+      };
+      
+      setTeams(prevTeams => {
+        const teamIndex = prevTeams.findIndex(t => t.id === teamId);
+        if (teamIndex === -1) {
+          console.error(`❌ Team with id ${teamId} not found`);
+          return prevTeams;
+        }
+        
+        const updatedTeams = [...prevTeams];
+        updatedTeams[teamIndex] = {
+          ...updatedTeams[teamIndex],
+          members: [...updatedTeams[teamIndex].members, newMember]
+        };
+        
+        console.log('Teams after adding member:', JSON.parse(JSON.stringify(updatedTeams)));
+        return updatedTeams;
+      });
+      
+      console.log('✅ Member added successfully');
+      console.groupEnd();
+      return newMember;
+    } catch (error) {
+      console.error('❌ Error adding member:', error);
+      console.groupEnd();
+      return null;
+    }
+  }, []);
+
+  // Update an existing member's information
+  const updateMember = useCallback((teamId: string, memberId: string, updates: Partial<MemberFormData>) => {
+    console.group('Updating Member');
+    try {
+      console.log('Team ID:', teamId);
+      console.log('Member ID:', memberId);
+      console.log('Updates:', updates);
+      
+      setTeams(prevTeams => {
+        const teamIndex = prevTeams.findIndex(t => t.id === teamId);
+        if (teamIndex === -1) {
+          console.error(`❌ Team with id ${teamId} not found`);
+          return prevTeams;
+        }
+
+        const team = prevTeams[teamIndex];
+        const memberIndex = team.members.findIndex(m => m.id === memberId);
+        
+        if (memberIndex === -1) {
+          console.error(`❌ Member with id ${memberId} not found in team ${teamId}`);
+          return prevTeams;
+        }
+        
+        console.log('Team and member found, applying updates...');
+        
+        const updatedTeams = [...prevTeams];
+        const updatedMembers = [...team.members];
+        
+        updatedMembers[memberIndex] = {
+          ...updatedMembers[memberIndex],
+          ...updates,
+          avatar: updates.avatar || updatedMembers[memberIndex].avatar
+        };
+        
+        updatedTeams[teamIndex] = {
+          ...team,
+          members: updatedMembers
+        };
+        
+        console.log('Teams after update:', JSON.parse(JSON.stringify(updatedTeams)));
+        return updatedTeams;
+      });
+      
+      console.log('✅ Member update triggered successfully');
+      console.groupEnd();
+      return { id: memberId, ...updates };
+    } catch (error) {
+      console.error('❌ Error updating member:', error);
+      console.groupEnd();
+      return null;
+    }
+  }, []);
+
+  // Remove a member from a team
+  const removeMember = useCallback((teamId: string, memberId: string) => {
+    console.group('Removing Member');
+    try {
+      console.log(`Removing member ${memberId} from team ${teamId}`);
+      
+      setTeams(prevTeams => {
+        const teamIndex = prevTeams.findIndex(t => t.id === teamId);
+        if (teamIndex === -1) {
+          console.error(`❌ Team with id ${teamId} not found`);
+          return prevTeams;
+        }
+        
+        const team = prevTeams[teamIndex];
+        const memberExists = team.members.some(m => m.id === memberId);
+        
+        if (!memberExists) {
+          console.error(`❌ Member with id ${memberId} not found in team ${teamId}`);
+          return prevTeams;
+        }
+        
+        const updatedTeams = [...prevTeams];
+        updatedTeams[teamIndex] = {
+          ...team,
+          members: team.members.filter(member => member.id !== memberId)
+        };
+        
+        console.log('Teams after removal:', JSON.parse(JSON.stringify(updatedTeams)));
+        return updatedTeams;
+      });
+      
+      console.log('✅ Member removed successfully');
+      console.groupEnd();
+      return true;
+    } catch (error) {
+      console.error('❌ Error removing member:', error);
+      console.groupEnd();
+      return false;
+    }
+  }, []);
+
+  // Get all members of a specific team
+  const getTeamMembers = useCallback((teamId: string): TeamMember[] => {
+    return teams.find((t: Team) => t.id === teamId)?.members || [];
+  }, [teams]);
+
+  // For backward compatibility
+  const inviteMember = useCallback((teamId: string, member: Omit<TeamMember, 'id' | 'isOnline'>) => {
+    addMember(teamId, member as MemberFormData);
+  }, [addMember]);
 
   return (
     <TaskContext.Provider value={{
@@ -357,6 +496,12 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       deleteTask,
       setCurrentTeam,
       addTeam,
+      // Member management
+      addMember,
+      updateMember,
+      removeMember,
+      getTeamMembers,
+      // For backward compatibility
       inviteMember
     }}>
       {children}

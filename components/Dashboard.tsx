@@ -8,15 +8,17 @@ import { Analytics } from '@/components/Analytics';
 import { Settings } from '@/components/Settings';
 import { Header } from '@/components/Header';
 import { Profile } from '@/components/Profile';
+import { TeamMembers } from '@/components/TeamMembers';
 
-import { useView } from '@/components/ViewContext';
+import { useView, ViewType } from '@/components/ViewContext';
 
 export function Dashboard() {
   const { currentView, setCurrentView } = useView();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const renderView = () => {
-    switch (currentView) {
+    const view = currentView as ViewType;
+    switch (view) {
       case 'board':
         return <TaskBoard />;
       case 'list':
@@ -27,6 +29,8 @@ export function Dashboard() {
         return <Settings />;
       case 'profile':
         return <Profile />;
+      case 'team':
+        return <TeamMembers />;
       default:
         return <TaskBoard />;
     }
@@ -35,8 +39,8 @@ export function Dashboard() {
   return (
     <div className="flex h-screen bg-background">
       <Sidebar 
-        currentView={currentView}
-        onViewChange={setCurrentView}
+        currentView={currentView as ViewType}
+        onViewChange={(view) => setCurrentView(view)}
         isOpen={sidebarOpen}
         onCloseSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
