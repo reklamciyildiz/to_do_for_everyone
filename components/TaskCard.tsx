@@ -13,7 +13,8 @@ import {
   AlertTriangle,
   Calendar
 } from 'lucide-react';
-import { Task, useTaskContext } from '@/components/TaskContext';
+import { Task } from '@/lib/types';
+import { useTaskContext } from '@/components/TaskContext';
 import { cn } from '@/lib/utils';
 import { format, isToday, isTomorrow, isPast } from 'date-fns';
 import { 
@@ -40,8 +41,8 @@ export function TaskCard({ task }: TaskCardProps) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   
   // Check permissions for this task
-  const canEdit = canEditTask(undefined, task.assigneeId);
-  const canDelete = canDeleteTask(undefined);
+  const canEdit = canEditTask(task.createdBy, task.assigneeId);
+  const canDelete = canDeleteTask(task.createdBy);
   
   const assignee = currentTeam?.members.find(m => m.id === task.assigneeId);
   

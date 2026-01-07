@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import { TaskCard } from '@/components/TaskCard';
 import { useTaskContext, TaskStatus } from '@/components/TaskContext';
+import { Task } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,7 +21,7 @@ const columns: { id: TaskStatus; title: string; color: string }[] = [
 ];
 
 export function TaskBoard() {
-  const { tasks, updateTask, filter, setFilter, currentUser, currentTeam, permissions, canCompleteTask } = useTaskContext();
+  const { tasks, updateTask, filter, setFilter, currentUser, currentTeam, permissions, canCompleteTask, canEditTask } = useTaskContext();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<TaskStatus | null>(null);
 
@@ -34,16 +35,18 @@ export function TaskBoard() {
     if (destination.droppableId !== source.droppableId) {
       const task = tasks.find(t => t.id === draggableId);
       
+      if (!task) return;
+      
       // Check permission for completing task (moving to done)
       if (destination.droppableId === 'done') {
-        if (!canCompleteTask(task?.assigneeId)) {
+        if (!canCompleteTask(task.assigneeId)) {
           return; // User doesn't have permission to complete this task
         }
       }
       
-      // Check general edit permission
-      if (!permissions.canEditAnyTask && !permissions.canEditOwnTask) {
-        return; // Viewer role can't move tasks
+      // Check general edit permission for this specific task
+      if (!canEditTask(task.createdBy, task.assigneeId)) {
+        return; // User doesn't have permission to edit this task
       }
       
       updateTask(draggableId, { status: destination.droppableId as TaskStatus });

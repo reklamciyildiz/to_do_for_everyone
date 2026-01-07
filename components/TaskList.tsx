@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useTaskContext, TaskStatus, TaskPriority, Task } from '@/components/TaskContext';
+import { useTaskContext, TaskStatus, TaskPriority } from '@/components/TaskContext';
+import { Task } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -45,7 +46,7 @@ const priorityConfig = {
 };
 
 export function TaskList() {
-  const { tasks, currentTeam, updateTask, deleteTask } = useTaskContext();
+  const { tasks, currentTeam, updateTask, deleteTask, canCompleteTask } = useTaskContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<TaskStatus | 'all'>('all');
   const [filterPriority, setFilterPriority] = useState<TaskPriority | 'all'>('all');
@@ -77,7 +78,8 @@ export function TaskList() {
       }
     });
 
-  const toggleTaskComplete = (taskId: string, currentStatus: TaskStatus) => {
+  const toggleTaskComplete = (taskId: string, currentStatus: TaskStatus, assigneeId?: string) => {
+    if (!canCompleteTask(assigneeId)) return;
     const newStatus = currentStatus === 'done' ? 'todo' : 'done';
     updateTask(taskId, { status: newStatus });
   };
@@ -194,7 +196,8 @@ export function TaskList() {
                 {/* Checkbox */}
                 <Checkbox
                   checked={task.status === 'done'}
-                  onCheckedChange={() => toggleTaskComplete(task.id, task.status)}
+                  onCheckedChange={() => toggleTaskComplete(task.id, task.status, task.assigneeId)}
+                  disabled={!canCompleteTask(task.assigneeId)}
                   className="mt-1"
                 />
 

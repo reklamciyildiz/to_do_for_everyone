@@ -18,6 +18,7 @@ export interface Task {
   dueDate?: Date;
   assigneeId?: string;
   teamId: string;
+  createdBy: string;
   createdAt: Date;
   updatedAt: Date;
   attachments: string[];
@@ -100,6 +101,7 @@ function transformTask(apiTask: any): Task {
     dueDate: apiTask.due_date ? new Date(apiTask.due_date) : undefined,
     assigneeId: apiTask.assignee_id,
     teamId: apiTask.team_id,
+    createdBy: apiTask.created_by || apiTask.createdBy || apiTask.user_id,
     createdAt: new Date(apiTask.created_at),
     updatedAt: new Date(apiTask.updated_at),
     attachments: [],

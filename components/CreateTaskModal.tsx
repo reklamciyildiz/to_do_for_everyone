@@ -28,7 +28,7 @@ interface CreateTaskModalProps {
 }
 
 export function CreateTaskModal({ open, onClose, defaultStatus }: CreateTaskModalProps) {
-  const { addTask, currentTeam } = useTaskContext();
+  const { addTask, currentTeam, currentUser } = useTaskContext();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<TaskStatus>(defaultStatus || 'todo');
@@ -48,7 +48,8 @@ export function CreateTaskModal({ open, onClose, defaultStatus }: CreateTaskModa
       priority,
       dueDate,
       assigneeId: assigneeId === "unassigned" ? undefined : assigneeId,
-      teamId: currentTeam.id
+      teamId: currentTeam.id,
+      createdBy: currentUser?.id || ''
     });
 
     // Reset form
