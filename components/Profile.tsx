@@ -9,6 +9,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useTaskContext } from '@/components/TaskContext';
 import { User, Shield, Loader2, Check } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { ChangePasswordModal } from '@/components/ChangePasswordModal';
+import { TwoFactorModal } from '@/components/TwoFactorModal';
 
 export function Profile() {
   const { currentUser, tasks, refreshData } = useTaskContext();
@@ -16,6 +18,8 @@ export function Profile() {
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
 
   // Sync name with currentUser when it changes
   useEffect(() => {
@@ -165,16 +169,36 @@ export function Profile() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button variant="outline" size="sm" className="w-full">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => setShowChangePassword(true)}
+              >
                 Change Password
               </Button>
-              <Button variant="outline" size="sm" className="w-full">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => setShowTwoFactor(true)}
+              >
                 Two-Factor Auth
               </Button>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Modals */}
+      <ChangePasswordModal 
+        open={showChangePassword} 
+        onClose={() => setShowChangePassword(false)} 
+      />
+      <TwoFactorModal 
+        open={showTwoFactor} 
+        onClose={() => setShowTwoFactor(false)} 
+      />
     </div>
   );
 }

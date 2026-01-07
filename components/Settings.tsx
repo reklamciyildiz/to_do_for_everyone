@@ -266,7 +266,7 @@ export function Settings() {
                         </div>
                         <p className="text-xs text-muted-foreground">{member.email}</p>
                         <p className="text-xs text-muted-foreground">
-                          {member.isOnline ? 'Active now' : 'Last seen 2 hours ago'}
+                          {member.isOnline ? 'Active now' : 'Offline'}
                         </p>
                       </div>
                       <Badge 
