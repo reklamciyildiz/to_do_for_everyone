@@ -628,6 +628,9 @@ export async function createUserWithOrganization(
   organizationName: string,
   avatarUrl?: string
 ) {
+  // Check if user already exists (might be a removed user)
+  const existingUser = await userDb.getByEmail(email);
+  
   // Generate slug from organization name
   const slug = organizationName
     .toLowerCase()
@@ -637,14 +640,26 @@ export async function createUserWithOrganization(
   // Create organization
   const org = await organizationDb.create(organizationName, slug);
 
-  // Create user as owner
-  const user = await userDb.create({
-    email,
-    name,
-    organization_id: org.id,
-    role: 'owner',
-    avatar_url: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
-  });
+  let user;
+  
+  if (existingUser) {
+    // Update existing user (re-activate them)
+    user = await userDb.update(existingUser.id, {
+      name: name || existingUser.name,
+      organization_id: org.id,
+      role: 'owner',
+      avatar_url: avatarUrl || existingUser.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
+    });
+  } else {
+    // Create new user as owner
+    user = await userDb.create({
+      email,
+      name,
+      organization_id: org.id,
+      role: 'owner',
+      avatar_url: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
+    });
+  }
 
   // Create default team
   const team = await teamDb.create({
