@@ -68,15 +68,15 @@ export const authOptions: NextAuthOptions = {
         token.provider = account.provider;
       }
       
-      // Always fetch fresh user data from Supabase on initial sign-in or session update
-      // This ensures organization info is always up-to-date after onboarding
-      if (token.email && (trigger === 'signIn' || trigger === 'update' || !token.organizationId)) {
+      // Always fetch fresh user data from Supabase to ensure organization info is up-to-date
+      // This is critical for security - when a user is removed from organization, token should reflect this
+      if (token.email) {
         try {
           const userDb = getUserDb();
           const dbUser: any = await userDb.getByEmail(token.email as string);
           if (dbUser) {
             token.id = dbUser.id;
-            token.organizationId = dbUser.organization_id;
+            token.organizationId = dbUser.organization_id; // Now properly nullable
             token.role = dbUser.role;
             token.needsOnboarding = false;
           } else {

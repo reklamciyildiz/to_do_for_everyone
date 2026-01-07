@@ -60,8 +60,10 @@ export async function DELETE(
 
     // If user has no other teams, remove from organization
     if (userTeams.length === 0) {
+      // Properly remove user from organization by setting organization_id to null
+      // This requires the migration: 20240107_make_organization_id_nullable.sql
       await userDb.update(params.memberId, { 
-        organization_id: null,
+        organization_id: null, // Properly remove from organization
         role: 'member' // Reset role to member
       });
     }

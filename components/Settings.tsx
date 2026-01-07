@@ -30,6 +30,9 @@ import { useTheme } from 'next-themes';
 import { ChangePasswordModal } from '@/components/ChangePasswordModal';
 import { TwoFactorModal } from '@/components/TwoFactorModal';
 import { ActiveSessionsModal } from '@/components/ActiveSessionsModal';
+import { CreateTeamModal } from '@/components/CreateTeamModal';
+import { EditTeamModal } from '@/components/EditTeamModal';
+import { DeleteTeamModal } from '@/components/DeleteTeamModal';
 
 export function Settings() {
   const { currentTeam, currentUser, removeMember, organizationName, updateOrganization, teams, createTeam, updateTeam } = useTaskContext();
@@ -41,6 +44,11 @@ export function Settings() {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [showActiveSessions, setShowActiveSessions] = useState(false);
+  
+  // Teams management state
+  const [showCreateTeam, setShowCreateTeam] = useState(false);
+  const [editingTeam, setEditingTeam] = useState<any>(null);
+  const [deletingTeam, setDeletingTeam] = useState<any>(null);
   
   // Organization settings state
   const [isEditingOrg, setIsEditingOrg] = useState(false);
@@ -236,12 +244,7 @@ export function Settings() {
                   <p className="text-xs text-muted-foreground mt-1 mb-3">
                     Create a new team for your organization
                   </p>
-                  <Button onClick={() => {
-                    const teamName = prompt('Enter team name:');
-                    if (teamName?.trim()) {
-                      createTeam(teamName.trim()).catch(console.error);
-                    }
-                  }}>
+                  <Button onClick={() => setShowCreateTeam(true)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Create Team
                   </Button>
@@ -271,12 +274,7 @@ export function Settings() {
                             variant="ghost" 
                             size="sm" 
                             className="h-6 w-6 p-0"
-                            onClick={() => {
-                              const newName = prompt('Enter new team name:', team.name);
-                              if (newName?.trim() && newName !== team.name) {
-                                updateTeam(team.id, newName.trim(), team.description || '').catch(console.error);
-                              }
-                            }}
+                            onClick={() => setEditingTeam(team)}
                           >
                             <Edit className="h-3 w-3" />
                           </Button>
@@ -285,24 +283,7 @@ export function Settings() {
                               variant="ghost" 
                               size="sm" 
                               className="h-6 w-6 p-0 text-red-500 hover:text-red-600"
-                              onClick={async () => {
-                                if (confirm(`Are you sure you want to delete "${team.name}"? This will remove all members from this team.`)) {
-                                  try {
-                                    const response = await fetch(`/api/teams/${team.id}`, {
-                                      method: 'DELETE',
-                                    });
-                                    const data = await response.json();
-                                    if (data.success) {
-                                      // Refresh teams list
-                                      window.location.reload();
-                                    } else {
-                                      alert('Failed to delete team: ' + data.error);
-                                    }
-                                  } catch (error) {
-                                    alert('Error deleting team');
-                                  }
-                                }
-                              }}
+                              onClick={() => setDeletingTeam(team)}
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
@@ -546,6 +527,37 @@ export function Settings() {
       <ActiveSessionsModal
         open={showActiveSessions}
         onClose={() => setShowActiveSessions(false)}
+      />
+
+      {/* Teams Management Modals */}
+      <CreateTeamModal 
+        open={showCreateTeam} 
+        onClose={() => setShowCreateTeam(false)} 
+      />
+      <EditTeamModal 
+        team={editingTeam}
+        open={!!editingTeam} 
+        onClose={() => setEditingTeam(null)}
+        onSave={async (teamId: string, name: string, description: string) => {
+          await updateTeam(teamId, name, description);
+          setEditingTeam(null);
+        }}
+      />
+      <DeleteTeamModal 
+        team={deletingTeam}
+        open={!!deletingTeam} 
+        onClose={() => setDeletingTeam(null)}
+        onConfirm={async (teamId: string) => {
+          const response = await fetch(`/api/teams/${teamId}`, {
+            method: 'DELETE',
+          });
+          const data = await response.json();
+          if (!data.success) {
+            throw new Error(data.error || 'Failed to delete team');
+          }
+          // Refresh teams list
+          window.location.reload();
+        }}
       />
     </div>
   );
