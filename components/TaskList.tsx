@@ -46,7 +46,7 @@ const priorityConfig = {
 };
 
 export function TaskList() {
-  const { tasks, currentTeam, updateTask, deleteTask, canCompleteTask } = useTaskContext();
+  const { tasks, currentTeam, updateTask, deleteTask, canCompleteTask, canEditTask, canDeleteTask } = useTaskContext();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<TaskStatus | 'all'>('all');
   const [filterPriority, setFilterPriority] = useState<TaskPriority | 'all'>('all');
@@ -277,28 +277,34 @@ export function TaskList() {
                         </div>
                       )}
 
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
+                      {(canEditTask(task.createdBy, task.assigneeId) || canDeleteTask(task.createdBy)) && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => setEditingTask(task)}>
-                            Edit Task
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            className="text-red-600 focus:text-red-600"
-                            onClick={() => deleteTask(task.id)}
-                          >
-                            Delete
-                          </DropdownMenuItem>
+                          {canEditTask(task.createdBy, task.assigneeId) && (
+                            <DropdownMenuItem onClick={() => setEditingTask(task)}>
+                              Edit Task
+                            </DropdownMenuItem>
+                          )}
+                          {canDeleteTask(task.createdBy) && (
+                            <DropdownMenuItem 
+                              className="text-red-600 focus:text-red-600"
+                              onClick={() => deleteTask(task.id)}
+                            >
+                              Delete
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
+                      )}
                     </div>
                   </div>
                 </div>
