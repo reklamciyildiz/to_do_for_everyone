@@ -32,7 +32,7 @@ import { TwoFactorModal } from '@/components/TwoFactorModal';
 import { ActiveSessionsModal } from '@/components/ActiveSessionsModal';
 
 export function Settings() {
-  const { currentTeam, currentUser, removeMember, organizationName, updateOrganization } = useTaskContext();
+  const { currentTeam, currentUser, removeMember, organizationName, updateOrganization, teams, createTeam, updateTeam } = useTaskContext();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -150,8 +150,8 @@ export function Settings() {
     setNewOrgName('');
   };
 
-  // Check if user is admin (database'deki owner'lar da admin gibi ele alınır)
-  const isAdmin = currentUser?.role === 'admin';
+  // Check if user is admin or owner
+  const isAdmin = currentUser?.role === 'admin' || (currentUser?.role as any) === 'owner';
 
   return (
     <div className="space-y-6">
@@ -215,6 +215,102 @@ export function Settings() {
                       </Button>
                     </div>
                   )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Teams Management - Admin Only */}
+          {isAdmin && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Teams Management
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Create New Team */}
+                <div>
+                  <Label className="text-sm font-medium">Create New Team</Label>
+                  <p className="text-xs text-muted-foreground mt-1 mb-3">
+                    Create a new team for your organization
+                  </p>
+                  <Button onClick={() => {
+                    const teamName = prompt('Enter team name:');
+                    if (teamName?.trim()) {
+                      createTeam(teamName.trim()).catch(console.error);
+                    }
+                  }}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Team
+                  </Button>
+                </div>
+
+                <Separator />
+
+                {/* Current Teams */}
+                <div>
+                  <h4 className="font-medium text-sm mb-4">Teams ({teams.length})</h4>
+                  <div className="space-y-3">
+                    {teams.map((team) => (
+                      <div key={team.id} className="flex items-center gap-3 p-3 rounded-lg border">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-sm">{team.name}</p>
+                            {team.id === currentTeam?.id && (
+                              <Badge variant="outline" className="text-xs">Current</Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {team.description || 'No description'} • {team.members.length} members
+                          </p>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-6 w-6 p-0"
+                            onClick={() => {
+                              const newName = prompt('Enter new team name:', team.name);
+                              if (newName?.trim() && newName !== team.name) {
+                                updateTeam(team.id, newName.trim(), team.description || '').catch(console.error);
+                              }
+                            }}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          {teams.length > 1 && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-6 w-6 p-0 text-red-500 hover:text-red-600"
+                              onClick={async () => {
+                                if (confirm(`Are you sure you want to delete "${team.name}"? This will remove all members from this team.`)) {
+                                  try {
+                                    const response = await fetch(`/api/teams/${team.id}`, {
+                                      method: 'DELETE',
+                                    });
+                                    const data = await response.json();
+                                    if (data.success) {
+                                      // Refresh teams list
+                                      window.location.reload();
+                                    } else {
+                                      alert('Failed to delete team: ' + data.error);
+                                    }
+                                  } catch (error) {
+                                    alert('Error deleting team');
+                                  }
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>

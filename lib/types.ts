@@ -2,7 +2,7 @@
 
 export type TaskStatus = 'todo' | 'progress' | 'review' | 'done';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type UserRole = 'admin' | 'member' | 'viewer';
+export type UserRole = 'owner' | 'admin' | 'member' | 'viewer';
 
 export interface User {
   id: string;
