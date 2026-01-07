@@ -18,7 +18,7 @@ interface InvitationDetails {
 }
 
 export default function InvitePage() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update: updateSession } = useSession();
   const router = useRouter();
   const params = useParams();
   const token = params.token as string;
@@ -83,6 +83,9 @@ export default function InvitePage() {
 
         setSuccess(true);
         
+        // Update session to reflect new organization
+        await updateSession();
+        
         // Redirect to dashboard after a short delay
         setTimeout(() => {
           router.push('/');
@@ -122,6 +125,9 @@ export default function InvitePage() {
       }
 
       setSuccess(true);
+      
+      // Update session to reflect new organization
+      await updateSession();
       
       // Redirect to dashboard after a short delay
       setTimeout(() => {
