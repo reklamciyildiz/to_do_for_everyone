@@ -32,7 +32,7 @@ import { TwoFactorModal } from '@/components/TwoFactorModal';
 import { ActiveSessionsModal } from '@/components/ActiveSessionsModal';
 
 export function Settings() {
-  const { currentTeam, currentUser, removeMember } = useTaskContext();
+  const { currentTeam, currentUser, removeMember, organizationName, updateOrganization } = useTaskContext();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -41,6 +41,11 @@ export function Settings() {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [showActiveSessions, setShowActiveSessions] = useState(false);
+  
+  // Organization settings state
+  const [isEditingOrg, setIsEditingOrg] = useState(false);
+  const [newOrgName, setNewOrgName] = useState('');
+  const [orgUpdateLoading, setOrgUpdateLoading] = useState(false);
   
   // Notification settings state
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -117,6 +122,36 @@ export function Settings() {
     saveSettings('compact_view', checked);
   };
 
+  const handleOrgNameEdit = () => {
+    setNewOrgName(organizationName);
+    setIsEditingOrg(true);
+  };
+
+  const handleOrgNameSave = async () => {
+    if (!newOrgName.trim() || newOrgName === organizationName) {
+      setIsEditingOrg(false);
+      return;
+    }
+
+    setOrgUpdateLoading(true);
+    try {
+      await updateOrganization(newOrgName.trim());
+      setIsEditingOrg(false);
+    } catch (error) {
+      console.error('Failed to update organization:', error);
+      alert('Failed to update organization name');
+    } finally {
+      setOrgUpdateLoading(false);
+    }
+  };
+
+  const handleOrgNameCancel = () => {
+    setIsEditingOrg(false);
+    setNewOrgName('');
+  };
+
+  // Check if user is admin (database'deki owner'lar da admin gibi ele alınır)
+  const isAdmin = currentUser?.role === 'admin';
 
   return (
     <div className="space-y-6">
@@ -130,6 +165,61 @@ export function Settings() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Settings */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Organization Settings - Only for Admin/Owner */}
+          {isAdmin && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  Organization
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium">Organization Name</Label>
+                  <p className="text-xs text-muted-foreground mt-1 mb-3">
+                    Update your organization's display name
+                  </p>
+                  {isEditingOrg ? (
+                    <div className="flex gap-2">
+                      <Input
+                        value={newOrgName}
+                        onChange={(e) => setNewOrgName(e.target.value)}
+                        placeholder="Organization name"
+                        disabled={orgUpdateLoading}
+                      />
+                      <Button 
+                        onClick={handleOrgNameSave}
+                        disabled={orgUpdateLoading || !newOrgName.trim()}
+                      >
+                        Save
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={handleOrgNameCancel}
+                        disabled={orgUpdateLoading}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium flex-1">{organizationName}</p>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={handleOrgNameEdit}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Team Management */}
           <Card>
             <CardHeader>

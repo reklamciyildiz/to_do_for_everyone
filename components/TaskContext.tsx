@@ -60,6 +60,7 @@ interface TaskContextType {
   currentUserRole: Role;
   permissions: Permission;
   organizationName: string;
+  organizationId: string | null;
   loading: boolean;
   error: string | null;
   filter: FilterType;
@@ -77,6 +78,7 @@ interface TaskContextType {
   removeMember: (teamId: string, memberId: string) => Promise<void>;
   getTeamMembers: (teamId: string) => TeamMember[];
   inviteMember: (teamId: string, member: Omit<TeamMember, 'id' | 'isOnline'>) => Promise<void>;
+  updateOrganization: (name: string) => Promise<void>;
   refreshData: () => Promise<void>;
   canEditTask: (taskCreatorId?: string, taskAssigneeId?: string) => boolean;
   canDeleteTask: (taskCreatorId?: string) => boolean;
@@ -132,6 +134,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   const [currentTeam, setCurrentTeamState] = useState<Team | null>(null);
   const [currentUser, setCurrentUser] = useState<TeamMember | null>(null);
   const [organizationName, setOrganizationName] = useState<string>('My Organization');
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterType>(null);
@@ -180,6 +183,20 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
               avatar: userData.data.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.data.name || 'U')}`,
               isOnline: true,
             });
+            
+            // Fetch organization name
+            if (userData.data.organization_id) {
+              setOrganizationId(userData.data.organization_id);
+              try {
+                const orgResponse = await fetch(`/api/organizations/${userData.data.organization_id}`);
+                const orgData = await orgResponse.json();
+                if (orgData.success && orgData.data) {
+                  setOrganizationName(orgData.data.name);
+                }
+              } catch (err) {
+                console.error('Failed to fetch organization:', err);
+              }
+            }
           } else {
             // Fallback to session data
             setCurrentUser({
@@ -479,6 +496,31 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     return canCompleteTask(currentUserRole, currentUser.id, taskAssigneeId);
   }, [currentUserRole, currentUser]);
 
+  // Update organization name
+  const updateOrganization = useCallback(async (name: string) => {
+    if (!organizationId) {
+      throw new Error('No organization ID found');
+    }
+    
+    try {
+      const response = await fetch(`/api/organizations/${organizationId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        setOrganizationName(name);
+      } else {
+        throw new Error(data.error || 'Failed to update organization');
+      }
+    } catch (err: any) {
+      console.error('Error updating organization:', err);
+      throw err;
+    }
+  }, [organizationId]);
+
   return (
     <TaskContext.Provider value={{
       tasks,
@@ -488,6 +530,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       currentUserRole,
       permissions,
       organizationName,
+      organizationId,
       loading,
       error,
       filter,
@@ -505,6 +548,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       removeMember,
       getTeamMembers,
       inviteMember,
+      updateOrganization,
       refreshData,
       canEditTask: checkCanEditTask,
       canDeleteTask: checkCanDeleteTask,
