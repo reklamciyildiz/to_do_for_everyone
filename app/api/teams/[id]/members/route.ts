@@ -38,6 +38,15 @@ export async function POST(
       );
     }
 
+    // Check if member is already in this team
+    const existingMembership = await teamMemberDb.getMembership(params.id, body.userId);
+    if (existingMembership) {
+      return NextResponse.json<ApiResponse<null>>(
+        { success: false, error: 'Member is already in this team' },
+        { status: 400 }
+      );
+    }
+
     const member = await teamMemberDb.add(
       params.id,
       body.userId,

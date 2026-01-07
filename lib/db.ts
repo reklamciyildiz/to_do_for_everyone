@@ -322,6 +322,18 @@ export const teamMemberDb = {
     return true;
   },
 
+  async getMembership(teamId: string, userId: string) {
+    const { data, error } = await supabase
+      .from('team_members')
+      .select('*')
+      .eq('team_id', teamId)
+      .eq('user_id', userId)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  },
+
   async getByUser(userId: string) {
     const { data, error } = await supabase
       .from('team_members')

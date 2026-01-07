@@ -78,6 +78,8 @@ interface TaskContextType {
   removeMember: (teamId: string, memberId: string) => Promise<void>;
   getTeamMembers: (teamId: string) => TeamMember[];
   inviteMember: (teamId: string, member: Omit<TeamMember, 'id' | 'isOnline'>) => Promise<void>;
+  moveMember: (memberId: string, fromTeamId: string, toTeamId: string) => Promise<void>;
+  addMemberToTeam: (userId: string, teamId: string) => Promise<void>;
   updateOrganization: (name: string) => Promise<void>;
   refreshData: () => Promise<void>;
   canEditTask: (taskCreatorId?: string, taskAssigneeId?: string) => boolean;
@@ -396,6 +398,52 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     await addMember(teamId, member as MemberFormData);
   }, [addMember]);
 
+  // Move member to another team
+  const moveMember = useCallback(async (memberId: string, fromTeamId: string, toTeamId: string) => {
+    try {
+      const response = await fetch(`/api/teams/${fromTeamId}/members/${memberId}/move`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetTeamId: toTeamId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to move member');
+      }
+
+      // Refresh teams data to reflect the move
+      await refreshData();
+    } catch (err) {
+      console.error('Error moving member:', err);
+      throw err;
+    }
+  }, [refreshData]);
+
+  // Add existing member to team
+  const addMemberToTeam = useCallback(async (userId: string, teamId: string) => {
+    try {
+      const response = await fetch(`/api/teams/${teamId}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to add member to team');
+      }
+
+      // Refresh teams data to reflect the addition
+      await refreshData();
+    } catch (err) {
+      console.error('Error adding member to team:', err);
+      throw err;
+    }
+  }, [refreshData]);
+
   // Create team via API
   const createTeam = useCallback(async (name: string, description?: string) => {
     try {
@@ -548,6 +596,8 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       removeMember,
       getTeamMembers,
       inviteMember,
+      moveMember,
+      addMemberToTeam,
       updateOrganization,
       refreshData,
       canEditTask: checkCanEditTask,

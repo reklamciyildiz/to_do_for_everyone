@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { organizationDb, userDb } from '@/lib/db';
+import { organizationDb, userDb, teamMemberDb } from '@/lib/db';
 
 // GET - Get organization by ID
 export async function GET(

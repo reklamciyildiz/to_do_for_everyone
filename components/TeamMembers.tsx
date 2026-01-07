@@ -8,18 +8,35 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Pencil, UserPlus, Mail } from 'lucide-react';
+import { Trash2, Pencil, UserPlus, Mail, ArrowRight, Users } from 'lucide-react';
 import { useTaskContext, TeamMember } from './TaskContext';
 import { InviteMemberModal } from './InviteMemberModal';
+import { MoveMemberModal } from './MoveMemberModal';
+import { AddMemberToTeamModal } from './AddMemberToTeamModal';
 import { Role, roleDisplayNames, roleDescriptions } from '@/lib/permissions';
 import { toast } from 'sonner';
 
 export function TeamMembers() {
-  const { currentTeam, currentUser, permissions, addMember, updateMember, removeMember, getTeamMembers, updateMemberRole } = useTaskContext();
+  const { 
+    currentTeam, 
+    currentUser, 
+    permissions, 
+    addMember, 
+    updateMember, 
+    removeMember, 
+    getTeamMembers, 
+    updateMemberRole,
+    moveMember,
+    addMemberToTeam,
+    teams,
+    organizationId
+  } = useTaskContext();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<{id: string; name: string; email: string; role: string} | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>(currentTeam?.members || []);
+  const [movingMember, setMovingMember] = useState<any>(null);
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   
   // Update team members when currentTeam changes
   useEffect(() => {
@@ -138,6 +155,30 @@ export function TeamMembers() {
     }
   };
 
+  const handleMoveMember = (member: any) => {
+    setMovingMember(member);
+  };
+
+  const handleMoveMemberConfirm = async (memberId: string, targetTeamId: string) => {
+    if (!currentTeam) return;
+    
+    try {
+      await moveMember(memberId, currentTeam.id, targetTeamId);
+      toast.success('Member moved successfully');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to move member');
+    }
+  };
+
+  const handleAddMemberToTeam = async (userId: string, teamId: string) => {
+    try {
+      await addMemberToTeam(userId, teamId);
+      toast.success('Member added to team successfully');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to add member to team');
+    }
+  };
+
   if (!currentTeam) {
     return <div className="p-4 text-center text-muted-foreground">Select a team to manage members</div>;
   }
@@ -152,11 +193,15 @@ export function TeamMembers() {
               <Mail className="mr-2 h-4 w-4" />
               Invite via Email
             </Button>
+            <Button variant="outline" onClick={() => setShowAddMemberModal(true)}>
+              <Users className="mr-2 h-4 w-4" />
+              Add Existing Member
+            </Button>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={() => setEditingMember(null)}>
                   <UserPlus className="mr-2 h-4 w-4" />
-                  Add Member
+                  Add New Member
                 </Button>
               </DialogTrigger>
             <DialogContent>
@@ -322,6 +367,17 @@ export function TeamMembers() {
                         <Pencil className="h-4 w-4" />
                       </Button>
                     )}
+                    {canRemove && teams.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleMoveMember(member)}
+                        disabled={!canManage}
+                        title="Move to another team"
+                      >
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                    )}
                     {canRemove && (
                       <Button
                         variant="ghost"
@@ -358,6 +414,30 @@ export function TeamMembers() {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <InviteMemberModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        teamId={currentTeam?.id}
+      />
+
+      <MoveMemberModal
+        member={movingMember}
+        currentTeamId={currentTeam?.id}
+        teams={teams}
+        open={!!movingMember}
+        onClose={() => setMovingMember(null)}
+        onMove={handleMoveMemberConfirm}
+      />
+
+      <AddMemberToTeamModal
+        teamId={currentTeam?.id}
+        organizationId={organizationId || ''}
+        open={showAddMemberModal}
+        onClose={() => setShowAddMemberModal(false)}
+        onAdd={handleAddMemberToTeam}
+      />
     </div>
   );
 }
