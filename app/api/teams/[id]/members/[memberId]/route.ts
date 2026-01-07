@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { teamMemberDb } from '@/lib/db';
+import { teamMemberDb, userDb } from '@/lib/db';
 import { ApiResponse } from '@/lib/types';
 
 // PATCH /api/teams/[id]/members/[memberId] - Update a team member's role
@@ -39,7 +39,32 @@ export async function DELETE(
   { params }: { params: { id: string; memberId: string } }
 ) {
   try {
+    // Get user info to check if they have other teams in this organization
+    const user = await userDb.getById(params.memberId);
+    if (!user) {
+      return NextResponse.json<ApiResponse<null>>(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Remove from team
     await teamMemberDb.remove(params.id, params.memberId);
+
+    // Check if user has any other teams in this organization
+    const teamMembers = await teamMemberDb.getByUser(params.memberId);
+    const userTeams = teamMembers.filter((tm: any) => {
+      // Check if team belongs to the same organization
+      return tm.team && tm.team.organization_id === user.organization_id && tm.team_id !== params.id;
+    });
+
+    // If user has no other teams, remove from organization
+    if (userTeams.length === 0) {
+      await userDb.update(params.memberId, { 
+        organization_id: null,
+        role: 'member' // Reset role to member
+      });
+    }
 
     return NextResponse.json<ApiResponse<null>>({
       success: true,

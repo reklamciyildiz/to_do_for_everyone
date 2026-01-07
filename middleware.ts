@@ -15,6 +15,7 @@ export async function middleware(request: NextRequest) {
     '/invite',
     '/api/invitations',
     '/api/onboarding',
+    '/access-denied',
   ];
 
   // Check if the current path is a public route
@@ -42,6 +43,14 @@ export async function middleware(request: NextRequest) {
   // Skip onboarding redirect for invite pages - they handle their own flow
   if (token.needsOnboarding && pathname !== '/onboarding') {
     // Don't redirect if user is on invite page or related API
+    if (!pathname.startsWith('/invite') && !pathname.startsWith('/api/onboarding')) {
+      return NextResponse.redirect(new URL('/onboarding', request.url));
+    }
+  }
+
+  // Check if user has organization access
+  if (!token.organizationId && pathname !== '/onboarding') {
+    // User has no organization - redirect to onboarding
     if (!pathname.startsWith('/invite') && !pathname.startsWith('/api/onboarding')) {
       return NextResponse.redirect(new URL('/onboarding', request.url));
     }

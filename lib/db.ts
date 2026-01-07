@@ -321,6 +321,23 @@ export const teamMemberDb = {
     if (error) throw error;
     return true;
   },
+
+  async getByUser(userId: string) {
+    const { data, error } = await supabase
+      .from('team_members')
+      .select(`
+        *,
+        team:teams (
+          id,
+          name,
+          organization_id
+        )
+      `)
+      .eq('user_id', userId);
+    
+    if (error) throw error;
+    return data;
+  },
 };
 
 // =============================================
