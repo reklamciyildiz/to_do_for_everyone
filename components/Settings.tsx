@@ -1,0 +1,366 @@
+'use client';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useTaskContext } from '@/components/TaskContext';
+import { InviteMemberModal } from '@/components/InviteMemberModal';
+import { 
+  Users, 
+  Mail, 
+  Bell, 
+  Shield, 
+  Palette,
+  Globe,
+  Plus,
+  Crown,
+  Settings as SettingsIcon,
+  Trash2,
+  Edit,
+  UserPlus
+} from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
+import { useTheme } from 'next-themes';
+import { ChangePasswordModal } from '@/components/ChangePasswordModal';
+import { TwoFactorModal } from '@/components/TwoFactorModal';
+import { ActiveSessionsModal } from '@/components/ActiveSessionsModal';
+
+export function Settings() {
+  const { currentTeam, currentUser, removeMember } = useTaskContext();
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  
+  // Security modals state
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
+  const [showActiveSessions, setShowActiveSessions] = useState(false);
+  
+  // Notification settings state
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [pushNotifications, setPushNotifications] = useState(true);
+  const [teamActivity, setTeamActivity] = useState(false);
+  const [compactView, setCompactView] = useState(false);
+
+  // Load settings from API and localStorage on mount
+  useEffect(() => {
+    setMounted(true);
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const response = await fetch('/api/users/settings');
+      const data = await response.json();
+      if (data.success && data.data) {
+        setEmailNotifications(data.data.email_notifications ?? true);
+        setPushNotifications(data.data.push_notifications ?? true);
+        setTeamActivity(data.data.team_activity ?? false);
+        setCompactView(data.data.compact_view ?? false);
+      }
+    } catch {
+      // Fallback to localStorage
+      const savedSettings = localStorage.getItem('taskflow-settings');
+      if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        setEmailNotifications(settings.emailNotifications ?? true);
+        setPushNotifications(settings.pushNotifications ?? true);
+        setTeamActivity(settings.teamActivity ?? false);
+        setCompactView(settings.compactView ?? false);
+      }
+    }
+  };
+
+  // Save settings to API and localStorage
+  const saveSettings = async (key: string, value: boolean) => {
+    // Save to localStorage as fallback
+    const savedSettings = localStorage.getItem('taskflow-settings');
+    const settings = savedSettings ? JSON.parse(savedSettings) : {};
+    settings[key] = value;
+    localStorage.setItem('taskflow-settings', JSON.stringify(settings));
+
+    // Save to API
+    try {
+      await fetch('/api/users/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: value }),
+      });
+    } catch (err) {
+      console.error('Failed to save settings to API:', err);
+    }
+  };
+
+  const handleEmailNotifications = (checked: boolean) => {
+    setEmailNotifications(checked);
+    saveSettings('email_notifications', checked);
+  };
+
+  const handlePushNotifications = (checked: boolean) => {
+    setPushNotifications(checked);
+    saveSettings('push_notifications', checked);
+  };
+
+  const handleTeamActivity = (checked: boolean) => {
+    setTeamActivity(checked);
+    saveSettings('team_activity', checked);
+  };
+
+  const handleCompactView = (checked: boolean) => {
+    setCompactView(checked);
+    saveSettings('compact_view', checked);
+  };
+
+
+  return (
+    <div className="space-y-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+        <p className="text-muted-foreground mt-1">
+          Manage your team, preferences, and account settings
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Settings */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Team Management */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Team Management
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Invite Members */}
+              <div>
+                <Label className="text-sm font-medium">Invite Team Member</Label>
+                <p className="text-xs text-muted-foreground mt-1 mb-3">
+                  Send an invitation to add new members to your organization
+                </p>
+                <Button onClick={() => setIsInviteModalOpen(true)}>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Invite New Member
+                </Button>
+              </div>
+
+              <Separator />
+
+              {/* Current Members */}
+              <div>
+                <h4 className="font-medium text-sm mb-4">Team Members ({currentTeam?.members.length || 0})</h4>
+                <div className="space-y-3">
+                  {currentTeam?.members.map((member) => (
+                    <div key={member.id} className="flex items-center gap-3 p-3 rounded-lg border">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={member.avatar} alt={member.name} />
+                        <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm">{member.name}</p>
+                          {member.role === 'admin' && (
+                            <Crown className="h-3 w-3 text-yellow-500" />
+                          )}
+                          <div className={cn(
+                            "w-2 h-2 rounded-full",
+                            member.isOnline ? "bg-green-500" : "bg-gray-400"
+                          )} />
+                        </div>
+                        <p className="text-xs text-muted-foreground">{member.email}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {member.isOnline ? 'Active now' : 'Last seen 2 hours ago'}
+                        </p>
+                      </div>
+                      <Badge 
+                        variant={member.role === 'admin' ? 'default' : 'secondary'}
+                        className="text-xs"
+                      >
+                        {member.role}
+                      </Badge>
+                      {member.id !== currentUser?.id && currentUser?.role === 'admin' && (
+                        <div className="flex gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-6 w-6 p-0 text-red-500 hover:text-red-600"
+                            onClick={() => currentTeam && removeMember(currentTeam.id, member.id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Notification Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5" />
+                Notifications
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Email Notifications</Label>
+                  <p className="text-xs text-muted-foreground">Receive email updates for task assignments</p>
+                </div>
+                <Switch 
+                  checked={emailNotifications} 
+                  onCheckedChange={handleEmailNotifications} 
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Push Notifications</Label>
+                  <p className="text-xs text-muted-foreground">Get instant notifications in your browser</p>
+                </div>
+                <Switch 
+                  checked={pushNotifications} 
+                  onCheckedChange={handlePushNotifications} 
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Team Activity</Label>
+                  <p className="text-xs text-muted-foreground">Notifications when team members complete tasks</p>
+                </div>
+                <Switch 
+                  checked={teamActivity} 
+                  onCheckedChange={handleTeamActivity} 
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sidebar Settings */}
+        <div className="space-y-6">
+          {/* Profile Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <SettingsIcon className="h-4 w-4" />
+                Profile
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="display-name" className="text-xs font-medium">Display Name</Label>
+                <Input id="display-name" defaultValue={currentUser?.name || ''} className="bg-white dark:bg-gray-800" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-xs font-medium">Email</Label>
+                <Input id="email" defaultValue={currentUser?.email || ''} disabled />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Appearance */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Palette className="h-4 w-4" />
+                Appearance
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-xs font-medium">Dark Mode</Label>
+                  <p className="text-xs text-muted-foreground">Toggle dark theme</p>
+                </div>
+                {mounted && (
+                  <Switch 
+                    checked={theme === 'dark'} 
+                    onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')} 
+                  />
+                )}
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-xs font-medium">Compact View</Label>
+                  <p className="text-xs text-muted-foreground">Reduce spacing in lists</p>
+                </div>
+                <Switch 
+                  checked={compactView} 
+                  onCheckedChange={handleCompactView} 
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Security */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Shield className="h-4 w-4" />
+                Security
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => setShowChangePassword(true)}
+              >
+                Change Password
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => setShowTwoFactor(true)}
+              >
+                Two-Factor Auth
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => setShowActiveSessions(true)}
+              >
+                Active Sessions
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Invite Member Modal */}
+      <InviteMemberModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        teamId={currentTeam?.id}
+      />
+
+      {/* Security Modals */}
+      <ChangePasswordModal
+        open={showChangePassword}
+        onClose={() => setShowChangePassword(false)}
+      />
+      <TwoFactorModal
+        open={showTwoFactor}
+        onClose={() => setShowTwoFactor(false)}
+      />
+      <ActiveSessionsModal
+        open={showActiveSessions}
+        onClose={() => setShowActiveSessions(false)}
+      />
+    </div>
+  );
+}
