@@ -8,6 +8,11 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'TaskFlow - Premium Team Productivity',
   description: 'Advanced task management with team collaboration, analytics, and AI-powered insights',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/manifest.json',
 };
 
 // Disable SSR for the entire app to avoid hydration warnings
