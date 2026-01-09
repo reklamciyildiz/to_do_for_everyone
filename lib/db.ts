@@ -768,6 +768,94 @@ export const notificationDb = {
 };
 
 // =============================================
+// CUSTOMER OPERATIONS
+// =============================================
+
+export const customerDb = {
+  async create(customerData: {
+    name: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    notes?: string;
+    organization_id: string;
+  }) {
+    const { data, error } = await supabase
+      .from('customers')
+      .insert(customerData)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async getById(id: string) {
+    const { data, error } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async getByOrganization(organizationId: string) {
+    const { data, error } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .order('name', { ascending: true });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async update(id: string, updates: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    notes?: string;
+  }) {
+    const { data, error } = await supabase
+      .from('customers')
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async delete(id: string) {
+    const { error } = await supabase
+      .from('customers')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    return true;
+  },
+
+  async getTaskStats(customerId: string) {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('status')
+      .eq('customer_id', customerId);
+    
+    if (error) throw error;
+    
+    const total = data?.length || 0;
+    const completed = data?.filter((t: any) => t.status === 'done').length || 0;
+    
+    return { total, completed };
+  },
+};
+
+// =============================================
 // AUTH HELPER - Join existing organization via invitation
 // =============================================
 

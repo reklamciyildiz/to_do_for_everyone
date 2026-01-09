@@ -16,7 +16,8 @@ import {
   Archive,
   Plus,
   Pencil,
-  Trophy
+  Trophy,
+  Building2
 } from 'lucide-react';
 import { useTaskContext, Team } from '@/components/TaskContext';
 import { ViewType } from '@/components/ViewContext';
@@ -70,6 +71,7 @@ export function Sidebar({ currentView, onViewChange, isOpen, onCloseSidebar }: S
   const menuItems: MenuItem[] = [
     { id: 'board', label: 'Task Board', icon: LayoutDashboard, count: teamTasks.length },
     { id: 'list', label: 'List View', icon: List, count: teamTasks.length },
+    { id: 'customers', label: 'Customers', icon: Building2 },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
     { id: 'achievements', label: 'Achievements', icon: Trophy },
     { id: 'team', label: 'Team', icon: Users },

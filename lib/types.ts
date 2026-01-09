@@ -21,12 +21,30 @@ export interface Task {
   priority: TaskPriority;
   dueDate?: Date;
   assigneeId?: string;
+  customerId?: string;
+  customerName?: string;
   teamId: string;
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
   attachments: string[];
   comments: Comment[];
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  notes?: string;
+  organizationId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  taskStats?: {
+    total: number;
+    completed: number;
+  };
 }
 
 export interface Comment {
@@ -71,6 +89,7 @@ export interface CreateTaskRequest {
   priority: TaskPriority;
   dueDate?: string;
   assigneeId?: string;
+  customerId?: string;
   teamId: string;
 }
 
@@ -81,6 +100,7 @@ export interface UpdateTaskRequest {
   priority?: TaskPriority;
   dueDate?: string;
   assigneeId?: string;
+  customerId?: string;
 }
 
 export interface CreateTeamRequest {

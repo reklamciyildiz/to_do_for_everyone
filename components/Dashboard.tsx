@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { TaskBoard } from '@/components/TaskBoard';
 import { TaskList } from '@/components/TaskList';
+import { Customers } from '@/components/Customers';
 import { Analytics } from '@/components/Analytics';
 import { Settings } from '@/components/Settings';
 import { Header } from '@/components/Header';
@@ -24,6 +25,8 @@ export function Dashboard() {
         return <TaskBoard />;
       case 'list':
         return <TaskList />;
+      case 'customers':
+        return <Customers />;
       case 'analytics':
         return <Analytics />;
       case 'settings':

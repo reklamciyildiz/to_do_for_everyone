@@ -56,8 +56,19 @@ export function TaskCard({ task }: TaskCardProps) {
   
   const isDueSoon = task.dueDate && isPast(task.dueDate) && task.status !== 'done';
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't open modal if clicking on dropdown menu
+    if ((e.target as HTMLElement).closest('[role="button"]')) {
+      return;
+    }
+    setIsEditOpen(true);
+  };
+
   return (
-    <Card className="p-4 bg-card hover:shadow-md transition-all duration-200 group border cursor-pointer">
+    <Card 
+      className="p-4 bg-card hover:shadow-md transition-all duration-200 group border cursor-pointer"
+      onClick={handleCardClick}
+    >
       <div className="space-y-3">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
@@ -66,7 +77,7 @@ export function TaskCard({ task }: TaskCardProps) {
           </h4>
           {(canEdit || canDelete) && (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -127,6 +138,16 @@ export function TaskCard({ task }: TaskCardProps) {
               </div>
             )}
           </div>
+        )}
+
+        {/* Customer Badge */}
+        {task.customerName && (
+          <Badge 
+            variant="outline" 
+            className="text-xs px-2 py-0.5 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700"
+          >
+            {task.customerName}
+          </Badge>
         )}
 
         {/* Priority and Due Date */}

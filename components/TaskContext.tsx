@@ -17,12 +17,30 @@ export interface Task {
   priority: TaskPriority;
   dueDate?: Date;
   assigneeId?: string;
+  customerId?: string;
+  customerName?: string;
   teamId: string;
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
   attachments: string[];
   comments: Comment[];
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  notes?: string;
+  organizationId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  taskStats?: {
+    total: number;
+    completed: number;
+  };
 }
 
 export interface Comment {
@@ -56,6 +74,7 @@ export type FilterType = 'dueToday' | 'highPriority' | 'assignedToMe' | null;
 interface TaskContextType {
   tasks: Task[];
   teams: Team[];
+  customers: Customer[];
   currentTeam: Team | null;
   currentUser: TeamMember | null;
   currentUserRole: Role;
@@ -65,7 +84,9 @@ interface TaskContextType {
   loading: boolean;
   error: string | null;
   filter: FilterType;
+  customerFilter: string | null;
   setFilter: (filter: FilterType) => void;
+  setCustomerFilter: (customerId: string | null) => void;
   addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'attachments' | 'comments'>) => Promise<void>;
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
@@ -83,6 +104,10 @@ interface TaskContextType {
   addMemberToTeam: (userId: string, teamId: string) => Promise<void>;
   updateOrganization: (name: string) => Promise<void>;
   refreshData: () => Promise<void>;
+  fetchCustomers: () => Promise<void>;
+  addCustomer: (customer: { name: string; email?: string; phone?: string; address?: string; notes?: string }) => Promise<void>;
+  updateCustomer: (id: string, updates: { name?: string; email?: string; phone?: string; address?: string; notes?: string }) => Promise<void>;
+  deleteCustomer: (id: string) => Promise<void>;
   canEditTask: (taskCreatorId?: string, taskAssigneeId?: string) => boolean;
   canDeleteTask: (taskCreatorId?: string) => boolean;
   canCompleteTask: (taskAssigneeId?: string) => boolean;
@@ -100,6 +125,8 @@ function transformTask(apiTask: any): Task {
     priority: apiTask.priority as TaskPriority,
     dueDate: apiTask.due_date ? new Date(apiTask.due_date) : undefined,
     assigneeId: apiTask.assignee_id,
+    customerId: apiTask.customer_id,
+    customerName: apiTask.customer?.name,
     teamId: apiTask.team_id,
     createdBy: apiTask.created_by || apiTask.createdBy || apiTask.user_id,
     createdAt: new Date(apiTask.created_at),
@@ -135,6 +162,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [currentTeam, setCurrentTeamState] = useState<Team | null>(null);
   const [currentUser, setCurrentUser] = useState<TeamMember | null>(null);
   const [organizationName, setOrganizationName] = useState<string>('My Organization');
@@ -142,6 +170,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterType>(null);
+  const [customerFilter, setCustomerFilter] = useState<string | null>(null);
 
   // Fetch data from API
   const refreshData = useCallback(async () => {
@@ -235,7 +264,91 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   // Initial data fetch
   useEffect(() => {
     refreshData();
+    fetchCustomers();
   }, [session]);
+
+  // Fetch customers from API
+  const fetchCustomers = useCallback(async () => {
+    try {
+      const response = await fetch('/api/customers');
+      const data = await response.json();
+      if (data.success && data.data) {
+        const transformedCustomers = data.data.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          email: c.email,
+          phone: c.phone,
+          address: c.address,
+          notes: c.notes,
+          organizationId: c.organization_id,
+          createdAt: new Date(c.created_at),
+          updatedAt: new Date(c.updated_at),
+          taskStats: c.taskStats,
+        }));
+        setCustomers(transformedCustomers);
+      }
+    } catch (err) {
+      console.error('Error fetching customers:', err);
+    }
+  }, []);
+
+  // Add customer
+  const addCustomer = useCallback(async (customerData: { name: string; email?: string; phone?: string; address?: string; notes?: string }) => {
+    try {
+      const response = await fetch('/api/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(customerData),
+      });
+      const data = await response.json();
+      if (data.success) {
+        await fetchCustomers();
+      } else {
+        throw new Error(data.error || 'Failed to create customer');
+      }
+    } catch (err) {
+      console.error('Error creating customer:', err);
+      throw err;
+    }
+  }, [fetchCustomers]);
+
+  // Update customer
+  const updateCustomer = useCallback(async (id: string, updates: { name?: string; email?: string; phone?: string; address?: string; notes?: string }) => {
+    try {
+      const response = await fetch(`/api/customers/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      const data = await response.json();
+      if (data.success) {
+        await fetchCustomers();
+      } else {
+        throw new Error(data.error || 'Failed to update customer');
+      }
+    } catch (err) {
+      console.error('Error updating customer:', err);
+      throw err;
+    }
+  }, [fetchCustomers]);
+
+  // Delete customer
+  const deleteCustomer = useCallback(async (id: string) => {
+    try {
+      const response = await fetch(`/api/customers/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      if (data.success) {
+        await fetchCustomers();
+      } else {
+        throw new Error(data.error || 'Failed to delete customer');
+      }
+    } catch (err) {
+      console.error('Error deleting customer:', err);
+      throw err;
+    }
+  }, [fetchCustomers]);
 
   // Add task via API
   const addTask = useCallback(async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'attachments' | 'comments'>) => {
@@ -247,19 +360,22 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
         priority: taskData.priority,
         dueDate: taskData.dueDate?.toISOString(),
         assigneeId: taskData.assigneeId,
+        customerId: taskData.customerId,
         teamId: taskData.teamId,
       });
 
       if (response.success && response.data) {
         const newTask = transformTask(response.data);
         setTasks(prev => [...prev, newTask]);
+        // Refresh customers to update task stats
+        await fetchCustomers();
       } else {
         console.error('Failed to create task:', response.error);
       }
     } catch (err) {
       console.error('Error creating task:', err);
     }
-  }, []);
+  }, [fetchCustomers]);
 
   // Update task via API with optimistic update
   const updateTask = useCallback(async (id: string, updates: Partial<Task>) => {
@@ -575,6 +691,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
     <TaskContext.Provider value={{
       tasks,
       teams,
+      customers,
       currentTeam,
       currentUser,
       currentUserRole,
@@ -584,7 +701,9 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       loading,
       error,
       filter,
+      customerFilter,
       setFilter,
+      setCustomerFilter,
       addTask,
       updateTask,
       deleteTask,
@@ -602,6 +721,10 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       addMemberToTeam,
       updateOrganization,
       refreshData,
+      fetchCustomers,
+      addCustomer,
+      updateCustomer,
+      deleteCustomer,
       canEditTask: checkCanEditTask,
       canDeleteTask: checkCanDeleteTask,
       canCompleteTask: checkCanCompleteTask,

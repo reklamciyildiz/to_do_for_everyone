@@ -28,13 +28,14 @@ interface CreateTaskModalProps {
 }
 
 export function CreateTaskModal({ open, onClose, defaultStatus }: CreateTaskModalProps) {
-  const { addTask, currentTeam, currentUser } = useTaskContext();
+  const { addTask, currentTeam, currentUser, customers } = useTaskContext();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<TaskStatus>(defaultStatus || 'todo');
   const [priority, setPriority] = useState<TaskPriority>('medium');
   const [dueDate, setDueDate] = useState<Date>();
   const [assigneeId, setAssigneeId] = useState<string>("unassigned");
+  const [customerId, setCustomerId] = useState<string>("none");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +49,7 @@ export function CreateTaskModal({ open, onClose, defaultStatus }: CreateTaskModa
       priority,
       dueDate,
       assigneeId: assigneeId === "unassigned" ? undefined : assigneeId,
+      customerId: customerId === "none" ? undefined : customerId,
       teamId: currentTeam.id,
       createdBy: currentUser?.id || ''
     });
@@ -59,6 +61,7 @@ export function CreateTaskModal({ open, onClose, defaultStatus }: CreateTaskModa
     setPriority('medium');
     setDueDate(undefined);
     setAssigneeId("unassigned");
+    setCustomerId("none");
     onClose();
   };
 
@@ -166,6 +169,23 @@ export function CreateTaskModal({ open, onClose, defaultStatus }: CreateTaskModa
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Customer (Optional)</Label>
+            <Select value={customerId} onValueChange={setCustomerId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select customer" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No Customer</SelectItem>
+                {customers.map((customer) => (
+                  <SelectItem key={customer.id} value={customer.id}>
+                    {customer.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">

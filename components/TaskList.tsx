@@ -188,18 +188,24 @@ export function TaskList() {
           };
 
           return (
-            <Card key={task.id} className={cn(
-              "p-4 hover:shadow-md transition-all duration-200 group",
-              task.status === 'done' && "opacity-75"
-            )}>
+            <Card 
+              key={task.id} 
+              className={cn(
+                "p-4 hover:shadow-md transition-all duration-200 group cursor-pointer",
+                task.status === 'done' && "opacity-75"
+              )}
+              onClick={() => setEditingTask(task)}
+            >
               <div className="flex items-center gap-4">
                 {/* Checkbox */}
-                <Checkbox
-                  checked={task.status === 'done'}
-                  onCheckedChange={() => toggleTaskComplete(task.id, task.status, task.assigneeId)}
-                  disabled={!canCompleteTask(task.assigneeId)}
-                  className="mt-1"
-                />
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Checkbox
+                    checked={task.status === 'done'}
+                    onCheckedChange={() => toggleTaskComplete(task.id, task.status, task.assigneeId)}
+                    disabled={!canCompleteTask(task.assigneeId)}
+                    className="mt-1"
+                  />
+                </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
@@ -234,6 +240,16 @@ export function TaskList() {
                         >
                           {priorityConfig[task.priority].label}
                         </Badge>
+
+                        {/* Customer */}
+                        {task.customerName && (
+                          <Badge 
+                            variant="outline" 
+                            className="text-xs px-2 py-0.5 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700"
+                          >
+                            {task.customerName}
+                          </Badge>
+                        )}
 
                         {/* Due date */}
                         {task.dueDate && (
@@ -279,7 +295,7 @@ export function TaskList() {
 
                       {(canEditTask(task.createdBy, task.assigneeId) || canDeleteTask(task.createdBy)) && (
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                             <Button 
                               variant="ghost" 
                               size="sm" 
@@ -288,16 +304,22 @@ export function TaskList() {
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                           {canEditTask(task.createdBy, task.assigneeId) && (
-                            <DropdownMenuItem onClick={() => setEditingTask(task)}>
+                            <DropdownMenuItem onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingTask(task);
+                            }}>
                               Edit Task
                             </DropdownMenuItem>
                           )}
                           {canDeleteTask(task.createdBy) && (
                             <DropdownMenuItem 
                               className="text-red-600 focus:text-red-600"
-                              onClick={() => deleteTask(task.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteTask(task.id);
+                              }}
                             >
                               Delete
                             </DropdownMenuItem>

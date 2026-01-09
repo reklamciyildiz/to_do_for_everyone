@@ -21,7 +21,7 @@ const columns: { id: TaskStatus; title: string; color: string }[] = [
 ];
 
 export function TaskBoard() {
-  const { tasks, updateTask, filter, setFilter, currentUser, currentTeam, permissions, canCompleteTask, canEditTask } = useTaskContext();
+  const { tasks, updateTask, filter, setFilter, currentUser, currentTeam, permissions, canCompleteTask, canEditTask, customers, customerFilter, setCustomerFilter } = useTaskContext();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<TaskStatus | null>(null);
 
@@ -71,13 +71,18 @@ export function TaskBoard() {
       result = result.filter(task => task.assigneeId === currentUser?.id && task.status !== 'done');
     }
     
+    // Apply customer filter
+    if (customerFilter) {
+      result = result.filter(task => task.customerId === customerFilter);
+    }
+    
     // Apply status filter
     if (statusFilter) {
       result = result.filter(task => task.status === statusFilter);
     }
     
     return result;
-  }, [tasks, statusFilter, filter, currentUser?.id, currentTeam?.id]);
+  }, [tasks, statusFilter, filter, customerFilter, currentUser?.id, currentTeam?.id]);
 
   const getFilterLabel = () => {
     if (filter === 'dueToday') return 'Due Today';
@@ -99,13 +104,37 @@ export function TaskBoard() {
               </button>
             </Badge>
           )}
+          {customerFilter && (
+            <Badge variant="outline" className="flex items-center gap-1 px-3 py-1 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700">
+              {customers.find(c => c.id === customerFilter)?.name || 'Customer'}
+              <button onClick={() => setCustomerFilter(null)} className="ml-1 hover:text-red-500">
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          )}
         </div>
-        {permissions.canCreateTask && (
-          <Button onClick={handleCreateTask}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Task
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {customers.length > 0 && (
+            <select
+              value={customerFilter || ''}
+              onChange={(e) => setCustomerFilter(e.target.value || null)}
+              className="h-10 px-3 py-2 text-sm border rounded-md bg-background"
+            >
+              <option value="">All Customers</option>
+              {customers.map((customer) => (
+                <option key={customer.id} value={customer.id}>
+                  {customer.name}
+                </option>
+              ))}
+            </select>
+          )}
+          {permissions.canCreateTask && (
+            <Button onClick={handleCreateTask}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Task
+            </Button>
+          )}
+        </div>
       </div>
       
       <div className="flex space-x-2 mb-4">
