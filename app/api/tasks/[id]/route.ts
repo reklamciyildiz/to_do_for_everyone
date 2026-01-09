@@ -44,7 +44,8 @@ export async function PATCH(
       status: body.status,
       priority: body.priority,
       due_date: body.dueDate,
-      assignee_id: body.assigneeId,
+      assignee_id: body.assigneeId === undefined ? undefined : (body.assigneeId || null),
+      customer_id: body.customerId === undefined ? undefined : (body.customerId || null),
     });
 
     if (!updatedTask) {

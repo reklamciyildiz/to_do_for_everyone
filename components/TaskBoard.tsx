@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CreateTaskModal } from '@/components/CreateTaskModal';
+import { EditTaskModal } from '@/components/EditTaskModal';
 import { cn } from '@/lib/utils';
 import { isToday } from 'date-fns';
 
@@ -23,6 +24,7 @@ const columns: { id: TaskStatus; title: string; color: string }[] = [
 export function TaskBoard() {
   const { tasks, updateTask, filter, setFilter, currentUser, currentTeam, permissions, canCompleteTask, canEditTask, customers, customerFilter, setCustomerFilter } = useTaskContext();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [statusFilter, setStatusFilter] = useState<TaskStatus | null>(null);
 
   const onDragEnd = (result: DropResult) => {
@@ -182,10 +184,13 @@ export function TaskBoard() {
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              {...provided.dragHandleProps}
                               className="mb-2"
                             >
-                              <TaskCard task={task} />
+                              <TaskCard 
+                                task={task} 
+                                dragHandleProps={provided.dragHandleProps}
+                                onTaskClick={setEditingTask}
+                              />
                             </div>
                           )}
                         </Draggable>
@@ -203,6 +208,12 @@ export function TaskBoard() {
       <CreateTaskModal 
         open={isCreateModalOpen} 
         onClose={() => setIsCreateModalOpen(false)} 
+      />
+
+      <EditTaskModal 
+        task={editingTask} 
+        open={!!editingTask} 
+        onClose={() => setEditingTask(null)} 
       />
     </div>
   );

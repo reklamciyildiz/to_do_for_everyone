@@ -395,6 +395,7 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
       if (updates.priority !== undefined) apiUpdates.priority = updates.priority;
       if (updates.dueDate !== undefined) apiUpdates.dueDate = updates.dueDate?.toISOString();
       if (updates.assigneeId !== undefined) apiUpdates.assigneeId = updates.assigneeId;
+      if (updates.customerId !== undefined) apiUpdates.customerId = updates.customerId;
 
       const response = await taskApi.update(id, apiUpdates);
 

@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
       priority: body.priority || 'medium',
       due_date: body.dueDate || null,
       assignee_id: body.assigneeId || null,
+      customer_id: body.customerId || null,
       team_id: body.teamId,
       organization_id: organizationId,
       created_by: userId,

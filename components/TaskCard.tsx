@@ -11,7 +11,8 @@ import {
   Paperclip, 
   MoreVertical,
   AlertTriangle,
-  Calendar
+  Calendar,
+  GripVertical
 } from 'lucide-react';
 import { Task } from '@/lib/types';
 import { useTaskContext } from '@/components/TaskContext';
@@ -23,10 +24,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { EditTaskModal } from '@/components/EditTaskModal';
 
 interface TaskCardProps {
   task: Task;
+  dragHandleProps?: any;
+  onTaskClick?: (task: Task) => void;
 }
 
 const priorityColors = {
@@ -36,9 +38,8 @@ const priorityColors = {
   urgent: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
 };
 
-export function TaskCard({ task }: TaskCardProps) {
+export function TaskCard({ task, dragHandleProps, onTaskClick }: TaskCardProps) {
   const { currentTeam, updateTask, deleteTask, canEditTask, canDeleteTask } = useTaskContext();
-  const [isEditOpen, setIsEditOpen] = useState(false);
   
   // Check permissions for this task
   const canEdit = canEditTask(task.createdBy, task.assigneeId);
@@ -57,11 +58,12 @@ export function TaskCard({ task }: TaskCardProps) {
   const isDueSoon = task.dueDate && isPast(task.dueDate) && task.status !== 'done';
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Don't open modal if clicking on dropdown menu
-    if ((e.target as HTMLElement).closest('[role="button"]')) {
+    // Don't open modal if clicking on dropdown menu or drag handle
+    const target = e.target as HTMLElement;
+    if (target.closest('[role="button"]') || target.closest('[data-drag-handle]')) {
       return;
     }
-    setIsEditOpen(true);
+    onTaskClick?.(task);
   };
 
   return (
@@ -72,9 +74,20 @@ export function TaskCard({ task }: TaskCardProps) {
       <div className="space-y-3">
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
-          <h4 className="font-medium text-sm line-clamp-2 leading-relaxed">
-            {task.title}
-          </h4>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            {dragHandleProps && (
+              <div 
+                {...dragHandleProps}
+                data-drag-handle="true"
+                className="cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+              >
+                <GripVertical className="h-4 w-4 text-muted-foreground" />
+              </div>
+            )}
+            <h4 className="font-medium text-sm line-clamp-2 leading-relaxed flex-1">
+              {task.title}
+            </h4>
+          </div>
           {(canEdit || canDelete) && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -93,7 +106,7 @@ export function TaskCard({ task }: TaskCardProps) {
                   </DropdownMenuItem>
                 )}
                 {canEdit && (
-                  <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
+                  <DropdownMenuItem onClick={() => onTaskClick?.(task)}>
                     Edit Task
                   </DropdownMenuItem>
                 )}
@@ -108,12 +121,6 @@ export function TaskCard({ task }: TaskCardProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-
-          <EditTaskModal 
-            task={task} 
-            open={isEditOpen} 
-            onClose={() => setIsEditOpen(false)} 
-          />
         </div>
 
         {/* Description */}

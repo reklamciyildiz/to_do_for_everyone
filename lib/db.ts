@@ -369,6 +369,10 @@ export const taskDb = {
           name,
           avatar_url
         ),
+        customer:customers (
+          id,
+          name
+        ),
         comments (
           id,
           text,
@@ -396,6 +400,10 @@ export const taskDb = {
           email,
           name,
           avatar_url
+        ),
+        customer:customers (
+          id,
+          name
         ),
         comments (
           id,
@@ -426,6 +434,10 @@ export const taskDb = {
           name,
           avatar_url
         ),
+        customer:customers (
+          id,
+          name
+        ),
         comments (
           id,
           text,
@@ -454,6 +466,10 @@ export const taskDb = {
           email,
           name,
           avatar_url
+        ),
+        customer:customers (
+          id,
+          name
         ),
         comments (
           id,
@@ -485,6 +501,10 @@ export const taskDb = {
           email,
           name,
           avatar_url
+        ),
+        customer:customers (
+          id,
+          name
         ),
         comments (
           id,
