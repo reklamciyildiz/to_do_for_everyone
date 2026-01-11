@@ -115,7 +115,7 @@ export function Customers() {
                           {customer.taskStats.total} tasks
                         </Badge>
                         {customer.taskStats.completed > 0 && (
-                          <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                          <Badge variant="secondary" className="text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400">
                             <CheckCircle2 className="h-3 w-3 mr-1" />
                             {customer.taskStats.completed} done
                           </Badge>

@@ -15,10 +15,10 @@ import { cn } from '@/lib/utils';
 import { isToday } from 'date-fns';
 
 const columns: { id: TaskStatus; title: string; color: string }[] = [
-  { id: 'todo', title: 'To Do', color: 'bg-gray-100 dark:bg-gray-800' },
-  { id: 'progress', title: 'In Progress', color: 'bg-blue-50 dark:bg-blue-900/20' },
-  { id: 'review', title: 'Review', color: 'bg-orange-50 dark:bg-orange-900/20' },
-  { id: 'done', title: 'Done', color: 'bg-green-50 dark:bg-green-900/20' }
+  { id: 'todo', title: 'To Do', color: 'bg-slate-100 dark:bg-slate-800' },
+  { id: 'progress', title: 'In Progress', color: 'bg-blue-50 dark:bg-blue-500/10' },
+  { id: 'review', title: 'Review', color: 'bg-amber-50 dark:bg-amber-500/10' },
+  { id: 'done', title: 'Done', color: 'bg-emerald-50 dark:bg-emerald-500/10' }
 ];
 
 export function TaskBoard() {
