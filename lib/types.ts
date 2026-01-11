@@ -20,8 +20,8 @@ export interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   dueDate?: Date;
-  assigneeId?: string;
-  customerId?: string;
+  assigneeId?: string | null;
+  customerId?: string | null;
   customerName?: string;
   teamId: string;
   createdBy: string;
@@ -88,8 +88,8 @@ export interface CreateTaskRequest {
   status: TaskStatus;
   priority: TaskPriority;
   dueDate?: string;
-  assigneeId?: string;
-  customerId?: string;
+  assigneeId?: string | null;
+  customerId?: string | null;
   teamId: string;
 }
 
@@ -99,8 +99,8 @@ export interface UpdateTaskRequest {
   status?: TaskStatus;
   priority?: TaskPriority;
   dueDate?: string;
-  assigneeId?: string;
-  customerId?: string;
+  assigneeId?: string | null;
+  customerId?: string | null;
 }
 
 export interface CreateTeamRequest {

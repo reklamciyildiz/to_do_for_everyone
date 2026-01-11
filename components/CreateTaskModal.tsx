@@ -48,8 +48,8 @@ export function CreateTaskModal({ open, onClose, defaultStatus }: CreateTaskModa
       status,
       priority,
       dueDate,
-      assigneeId: assigneeId === "unassigned" ? undefined : assigneeId,
-      customerId: customerId === "none" ? undefined : customerId,
+      assigneeId: assigneeId === "unassigned" ? null : assigneeId,
+      customerId: customerId === "none" ? null : customerId,
       teamId: currentTeam.id,
       createdBy: currentUser?.id || ''
     });

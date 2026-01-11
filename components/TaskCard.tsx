@@ -151,7 +151,7 @@ export function TaskCard({ task, dragHandleProps, onTaskClick }: TaskCardProps) 
         {task.customerName && (
           <Badge 
             variant="outline" 
-            className="text-xs px-2 py-0.5 bg-accent/10 text-accent-foreground border-accent/30 dark:bg-accent/20 dark:text-accent dark:border-accent/40"
+            className="text-xs px-2 py-0.5 bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/50 dark:text-purple-200 dark:border-purple-700"
           >
             {task.customerName}
           </Badge>

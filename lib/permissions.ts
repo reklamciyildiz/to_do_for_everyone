@@ -90,8 +90,8 @@ export function getPermissions(role: Role): Permission {
 export function canEditTask(
   userRole: Role,
   userId: string,
-  taskCreatorId?: string,
-  taskAssigneeId?: string
+  taskCreatorId?: string | null,
+  taskAssigneeId?: string | null
 ): boolean {
   const permissions = getPermissions(userRole);
   
@@ -105,7 +105,7 @@ export function canEditTask(
 export function canDeleteTask(
   userRole: Role,
   userId: string,
-  taskCreatorId?: string
+  taskCreatorId?: string | null
 ): boolean {
   const permissions = getPermissions(userRole);
   
@@ -119,7 +119,7 @@ export function canDeleteTask(
 export function canCompleteTask(
   userRole: Role,
   userId: string,
-  taskAssigneeId?: string
+  taskAssigneeId?: string | null
 ): boolean {
   const permissions = getPermissions(userRole);
   

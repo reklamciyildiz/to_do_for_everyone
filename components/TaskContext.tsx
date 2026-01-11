@@ -16,8 +16,8 @@ export interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   dueDate?: Date;
-  assigneeId?: string;
-  customerId?: string;
+  assigneeId?: string | null;
+  customerId?: string | null;
   customerName?: string;
   teamId: string;
   createdBy: string;
@@ -108,9 +108,9 @@ interface TaskContextType {
   addCustomer: (customer: { name: string; email?: string; phone?: string; address?: string; notes?: string }) => Promise<void>;
   updateCustomer: (id: string, updates: { name?: string; email?: string; phone?: string; address?: string; notes?: string }) => Promise<void>;
   deleteCustomer: (id: string) => Promise<void>;
-  canEditTask: (taskCreatorId?: string, taskAssigneeId?: string) => boolean;
-  canDeleteTask: (taskCreatorId?: string) => boolean;
-  canCompleteTask: (taskAssigneeId?: string) => boolean;
+  canEditTask: (taskCreatorId?: string | null, taskAssigneeId?: string | null) => boolean;
+  canDeleteTask: (taskCreatorId?: string | null) => boolean;
+  canCompleteTask: (taskAssigneeId?: string | null) => boolean;
 }
 
 const TaskContext = createContext<TaskContextType | undefined>(undefined);
@@ -648,17 +648,17 @@ export function TaskProvider({ children }: { children: React.ReactNode }) {
   }, [currentUserRole]);
 
   // Permission check functions
-  const checkCanEditTask = useCallback((taskCreatorId?: string, taskAssigneeId?: string): boolean => {
+  const checkCanEditTask = useCallback((taskCreatorId?: string | null, taskAssigneeId?: string | null): boolean => {
     if (!currentUser) return false;
     return canEditTask(currentUserRole, currentUser.id, taskCreatorId, taskAssigneeId);
   }, [currentUserRole, currentUser]);
 
-  const checkCanDeleteTask = useCallback((taskCreatorId?: string): boolean => {
+  const checkCanDeleteTask = useCallback((taskCreatorId?: string | null): boolean => {
     if (!currentUser) return false;
     return canDeleteTask(currentUserRole, currentUser.id, taskCreatorId);
   }, [currentUserRole, currentUser]);
 
-  const checkCanCompleteTask = useCallback((taskAssigneeId?: string): boolean => {
+  const checkCanCompleteTask = useCallback((taskAssigneeId?: string | null): boolean => {
     if (!currentUser) return false;
     return canCompleteTask(currentUserRole, currentUser.id, taskAssigneeId);
   }, [currentUserRole, currentUser]);

@@ -54,8 +54,8 @@ export function EditTaskModal({ task, open, onClose }: EditTaskModalProps) {
         description,
         status,
         priority,
-        assigneeId: assigneeId === 'unassigned' ? undefined : assigneeId,
-        customerId: customerId === 'none' ? undefined : customerId,
+        assigneeId: assigneeId === 'unassigned' ? null : assigneeId,
+        customerId: customerId === 'none' ? null : customerId,
         dueDate: dueDate ? new Date(dueDate) : undefined,
       });
       onClose();
