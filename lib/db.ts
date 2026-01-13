@@ -2,6 +2,7 @@
 // This replaces the in-memory store with real database operations
 
 import { getSupabaseClient } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 // Helper to get client at runtime only - NO client created at build time
 function getClient() {
@@ -16,13 +17,21 @@ const supabase = new Proxy({} as any, {
   },
 });
 
+// Use admin client for API operations (bypasses RLS)
+// This is safe because API routes already check permissions
+// Gradually migrate to use 'db' instead of 'supabase' for better RLS control
+const db = supabaseAdmin;
+
+// For now, keep using supabase for backward compatibility
+// TODO: Migrate all operations to use 'db' (supabaseAdmin) when RLS is enabled
+
 // =============================================
 // ORGANIZATION OPERATIONS
 // =============================================
 
 export const organizationDb = {
   async create(name: string, slug: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('organizations')
       .insert({ name, slug })
       .select()

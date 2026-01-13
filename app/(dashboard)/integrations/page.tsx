@@ -45,6 +45,8 @@ export default function IntegrationsPage() {
   const [logs, setLogs] = useState<WebhookLog[]>([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
+  const [isSecretOpen, setIsSecretOpen] = useState(false);
+  const [newWebhookSecret, setNewWebhookSecret] = useState('');
   const [copiedSecret, setCopiedSecret] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -90,7 +92,8 @@ export default function IntegrationsPage() {
         setWebhooks([data.data, ...webhooks]);
         setIsCreateOpen(false);
         setFormData({ name: '', url: '', events: [] });
-        alert(`Webhook created! Secret: ${data.data.secret}\n\nSave this secret - you'll need it to verify webhook signatures!`);
+        setNewWebhookSecret(data.data.secret);
+        setIsSecretOpen(true);
       } else {
         alert('Failed to create webhook: ' + data.error);
       }
@@ -391,6 +394,82 @@ export default function IntegrationsPage() {
               ))}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Secret Key Dialog */}
+      <Dialog open={isSecretOpen} onOpenChange={setIsSecretOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-green-600 dark:text-green-400">
+              <Check className="w-6 h-6" />
+              Webhook Created Successfully!
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl">⚠️</div>
+                <div>
+                  <h4 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">
+                    Save This Secret Key!
+                  </h4>
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    This is the only time you'll see this secret. You'll need it to verify webhook signatures.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium mb-2 block">Your Webhook Secret</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={newWebhookSecret}
+                  readOnly
+                  className="font-mono text-sm bg-muted"
+                />
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    navigator.clipboard.writeText(newWebhookSecret);
+                    setCopiedSecret(newWebhookSecret);
+                    setTimeout(() => setCopiedSecret(null), 2000);
+                  }}
+                >
+                  {copiedSecret === newWebhookSecret ? (
+                    <>
+                      <Check className="w-4 h-4 mr-2 text-green-600" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                📚 How to Use This Secret
+              </h4>
+              <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                <li>• Use it to verify webhook signatures (HMAC-SHA256)</li>
+                <li>• Store it securely in your environment variables</li>
+                <li>• Never commit it to version control</li>
+              </ul>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button onClick={() => setIsSecretOpen(false)} className="w-full">
+              I've Saved the Secret
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
