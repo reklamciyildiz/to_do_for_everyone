@@ -876,6 +876,162 @@ export const customerDb = {
 };
 
 // =============================================
+// WEBHOOK DATABASE OPERATIONS
+// =============================================
+
+export const webhookDb = {
+  async create(webhook: {
+    name: string;
+    url: string;
+    events: string[];
+    secret: string;
+    organization_id: string;
+    created_by: string;
+  }) {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('webhooks')
+      .insert(webhook)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async getById(id: string) {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('webhooks')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async getByOrganization(organizationId: string) {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('webhooks')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getActiveByOrganization(organizationId: string) {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('webhooks')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .eq('active', true)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async update(id: string, updates: {
+    name?: string;
+    url?: string;
+    events?: string[];
+    active?: boolean;
+  }) {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('webhooks')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async delete(id: string) {
+    const supabase = getSupabaseClient();
+    const { error } = await supabase
+      .from('webhooks')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    return true;
+  },
+
+  async createLog(log: {
+    webhook_id: string;
+    event: string;
+    payload: any;
+    response: any;
+    success: boolean;
+    attempts: number;
+    next_retry_at?: string;
+  }) {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('webhook_logs')
+      .insert(log)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async getLogs(webhookId: string, limit: number = 50) {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('webhook_logs')
+      .select('*')
+      .eq('webhook_id', webhookId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getFailedLogs() {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('webhook_logs')
+      .select('*')
+      .eq('success', false)
+      .not('next_retry_at', 'is', null)
+      .lte('next_retry_at', new Date().toISOString())
+      .order('next_retry_at', { ascending: true });
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async updateLog(id: string, updates: {
+    response?: any;
+    success?: boolean;
+    attempts?: number;
+    next_retry_at?: string | null;
+  }) {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from('webhook_logs')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+};
+
+// =============================================
 // AUTH HELPER - Join existing organization via invitation
 // =============================================
 

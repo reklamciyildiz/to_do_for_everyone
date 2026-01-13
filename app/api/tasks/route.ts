@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { taskDb, userDb, notificationDb } from '@/lib/db';
+import { taskDb, notificationDb, userDb } from '@/lib/db';
 import { ApiResponse } from '@/lib/types';
+import { triggerWebhook } from '@/lib/webhook-trigger';
+import { TaskCreatedPayload, TaskAssignedPayload } from '@/lib/webhooks';
 
 // GET /api/tasks - Get all tasks (optionally filtered by teamId or organizationId)
 export async function GET(request: NextRequest) {
@@ -101,6 +103,41 @@ export async function POST(request: NextRequest) {
       } catch (notifError) {
         console.error('Failed to create notification:', notifError);
       }
+    }
+
+    // Trigger webhooks
+    try {
+      // Task created webhook
+      const taskCreatedPayload: TaskCreatedPayload = {
+        task: {
+          id: task.id,
+          title: task.title,
+          description: task.description || '',
+          status: task.status,
+          priority: task.priority,
+          dueDate: task.due_date,
+          assigneeId: task.assignee_id,
+          customerId: task.customer_id,
+          teamId: task.team_id,
+          createdBy: task.created_by,
+        },
+      };
+      await triggerWebhook(organizationId, 'task.created', taskCreatedPayload);
+
+      // Task assigned webhook (if assigned)
+      if (body.assigneeId) {
+        const taskAssignedPayload: TaskAssignedPayload = {
+          task: {
+            id: task.id,
+            title: task.title,
+            assigneeId: body.assigneeId,
+            assignedBy: userId,
+          },
+        };
+        await triggerWebhook(organizationId, 'task.assigned', taskAssignedPayload);
+      }
+    } catch (webhookError) {
+      console.error('Failed to trigger webhooks:', webhookError);
     }
 
     return NextResponse.json<ApiResponse<any>>({

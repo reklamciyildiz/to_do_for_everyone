@@ -11,6 +11,9 @@ import { Header } from '@/components/Header';
 import { Profile } from '@/components/Profile';
 import { TeamMembers } from '@/components/TeamMembers';
 import { Achievements } from '@/components/Achievements';
+import dynamic from 'next/dynamic';
+
+const Integrations = dynamic(() => import('@/app/(dashboard)/integrations/page'), { ssr: false });
 
 import { useView, ViewType } from '@/components/ViewContext';
 
@@ -27,6 +30,8 @@ export function Dashboard() {
         return <TaskList />;
       case 'customers':
         return <Customers />;
+      case 'integrations':
+        return <Integrations />;
       case 'analytics':
         return <Analytics />;
       case 'settings':
