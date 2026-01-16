@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate:auth": "tsx scripts/migrate-users-to-supabase-auth.ts"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
@@ -50,6 +51,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
+    "dotenv": "^17.2.3",
     "embla-carousel-react": "^8.3.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "13.5.1",
@@ -76,7 +78,8 @@
   },
   "devDependencies": {
     "@types/react": "18.2.22",
-    "@types/react-dom": "18.2.7"
+    "@types/react-dom": "18.2.7",
+    "tsx": "^4.21.0"
   },
   "overrides": {
     "@types/react": "18.2.22",

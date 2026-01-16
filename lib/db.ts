@@ -42,7 +42,7 @@ export const organizationDb = {
   },
 
   async getById(id: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('organizations')
       .select('*')
       .eq('id', id)
@@ -53,7 +53,7 @@ export const organizationDb = {
   },
 
   async getBySlug(slug: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('organizations')
       .select('*')
       .eq('slug', slug)
@@ -64,7 +64,7 @@ export const organizationDb = {
   },
 
   async update(id: string, updates: any) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('organizations')
       .update(updates)
       .eq('id', id)
@@ -82,7 +82,7 @@ export const organizationDb = {
 
 export const userDb = {
   async create(userData: any) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('users')
       .insert(userData)
       .select()
@@ -93,7 +93,7 @@ export const userDb = {
   },
 
   async getById(id: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('users')
       .select('*')
       .eq('id', id)
@@ -104,7 +104,7 @@ export const userDb = {
   },
 
   async getByEmail(email: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('users')
       .select('*')
       .eq('email', email)
@@ -115,18 +115,17 @@ export const userDb = {
   },
 
   async getByOrganization(organizationId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('users')
       .select('*')
-      .eq('organization_id', organizationId)
-      .order('created_at', { ascending: true });
+      .eq('organization_id', organizationId);
     
     if (error) throw error;
     return data;
   },
 
   async update(id: string, updates: any) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('users')
       .update(updates)
       .eq('id', id)
@@ -138,7 +137,7 @@ export const userDb = {
   },
 
   async updateOnlineStatus(id: string, isOnline: boolean) {
-    const { error } = await supabase
+    const { error } = await db
       .from('users')
       .update({ is_online: isOnline })
       .eq('id', id);
@@ -153,7 +152,7 @@ export const userDb = {
 
 export const teamDb = {
   async create(teamData: any) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('teams')
       .insert(teamData)
       .select()
@@ -164,7 +163,7 @@ export const teamDb = {
   },
 
   async getById(id: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('teams')
       .select(`
         *,
@@ -189,7 +188,7 @@ export const teamDb = {
   },
 
   async getByOrganization(organizationId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('teams')
       .select(`
         *,
@@ -214,7 +213,7 @@ export const teamDb = {
   },
 
   async getByUser(userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('team_members')
       .select(`
         team:teams (
@@ -240,7 +239,7 @@ export const teamDb = {
   },
 
   async update(id: string, updates: any) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('teams')
       .update(updates)
       .eq('id', id)
@@ -252,7 +251,7 @@ export const teamDb = {
   },
 
   async delete(id: string) {
-    const { error } = await supabase
+    const { error } = await db
       .from('teams')
       .delete()
       .eq('id', id);
@@ -268,7 +267,7 @@ export const teamDb = {
 
 export const teamMemberDb = {
   async add(teamId: string, userId: string, role: 'admin' | 'member' | 'viewer' = 'member') {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('team_members')
       .insert({ team_id: teamId, user_id: userId, role })
       .select(`
@@ -288,7 +287,7 @@ export const teamMemberDb = {
   },
 
   async getByTeam(teamId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('team_members')
       .select(`
         *,
@@ -308,7 +307,7 @@ export const teamMemberDb = {
   },
 
   async updateRole(teamId: string, userId: string, role: 'admin' | 'member' | 'viewer') {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('team_members')
       .update({ role })
       .eq('team_id', teamId)
@@ -321,7 +320,7 @@ export const teamMemberDb = {
   },
 
   async remove(teamId: string, userId: string) {
-    const { error } = await supabase
+    const { error } = await db
       .from('team_members')
       .delete()
       .eq('team_id', teamId)
@@ -332,7 +331,7 @@ export const teamMemberDb = {
   },
 
   async getMembership(teamId: string, userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('team_members')
       .select('*')
       .eq('team_id', teamId)
@@ -344,7 +343,7 @@ export const teamMemberDb = {
   },
 
   async getByUser(userId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('team_members')
       .select(`
         *,
@@ -367,7 +366,7 @@ export const teamMemberDb = {
 
 export const taskDb = {
   async create(taskData: any) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('tasks')
       .insert(taskData)
       .select(`
@@ -400,7 +399,7 @@ export const taskDb = {
   },
 
   async getById(id: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('tasks')
       .select(`
         *,
@@ -433,7 +432,7 @@ export const taskDb = {
   },
 
   async getByTeam(teamId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('tasks')
       .select(`
         *,
@@ -466,7 +465,7 @@ export const taskDb = {
   },
 
   async getByOrganization(organizationId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('tasks')
       .select(`
         *,
@@ -499,7 +498,7 @@ export const taskDb = {
   },
 
   async update(id: string, updates: any) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('tasks')
       .update(updates)
       .eq('id', id)
@@ -533,7 +532,7 @@ export const taskDb = {
   },
 
   async delete(id: string) {
-    const { error } = await supabase
+    const { error } = await db
       .from('tasks')
       .delete()
       .eq('id', id);
@@ -549,7 +548,7 @@ export const taskDb = {
 
 export const commentDb = {
   async create(taskId: string, authorId: string, text: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('comments')
       .insert({ task_id: taskId, author_id: authorId, text })
       .select(`
@@ -567,7 +566,7 @@ export const commentDb = {
   },
 
   async getByTask(taskId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('comments')
       .select(`
         *,
@@ -585,7 +584,7 @@ export const commentDb = {
   },
 
   async delete(id: string) {
-    const { error } = await supabase
+    const { error } = await db
       .from('comments')
       .delete()
       .eq('id', id);
@@ -601,7 +600,7 @@ export const commentDb = {
 
 export const invitationDb = {
   async create(invitationData: any) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('invitations')
       .insert(invitationData)
       .select()
@@ -612,7 +611,7 @@ export const invitationDb = {
   },
 
   async getByToken(token: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('invitations')
       .select('*')
       .eq('token', token)
@@ -625,7 +624,7 @@ export const invitationDb = {
   },
 
   async getByOrganization(organizationId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('invitations')
       .select('*')
       .eq('organization_id', organizationId)
@@ -637,7 +636,7 @@ export const invitationDb = {
   },
 
   async accept(id: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('invitations')
       .update({ accepted_at: new Date().toISOString() })
       .eq('id', id)
@@ -649,7 +648,7 @@ export const invitationDb = {
   },
 
   async delete(id: string) {
-    const { error } = await supabase
+    const { error } = await db
       .from('invitations')
       .delete()
       .eq('id', id);
@@ -682,8 +681,10 @@ export async function createUserWithOrganization(
   const org = await organizationDb.create(organizationName, slug);
 
   let user;
+  let userId: string;
   
   if (existingUser) {
+    userId = existingUser.id;
     // Update existing user (re-activate them)
     user = await userDb.update(existingUser.id, {
       name: name || existingUser.name,
@@ -700,7 +701,12 @@ export async function createUserWithOrganization(
       role: 'owner',
       avatar_url: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`,
     });
+    userId = user.id;
   }
+
+  // Sync user to Supabase Auth for RLS compatibility
+  const { syncUserToSupabaseAuth } = await import('@/lib/supabase-auth');
+  await syncUserToSupabaseAuth(userId, email, name);
 
   // Create default team
   const team = await teamDb.create({
@@ -729,7 +735,7 @@ export const notificationDb = {
     message?: string;
     link?: string;
   }) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('notifications')
       .insert(notification)
       .select()
@@ -740,7 +746,7 @@ export const notificationDb = {
   },
 
   async getByUser(userId: string, limit = 20) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('notifications')
       .select('*')
       .eq('user_id', userId)
@@ -752,7 +758,7 @@ export const notificationDb = {
   },
 
   async getUnreadCount(userId: string) {
-    const { count, error } = await supabase
+    const { count, error } = await db
       .from('notifications')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
@@ -763,7 +769,7 @@ export const notificationDb = {
   },
 
   async markAsRead(notificationId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('notifications')
       .update({ read: true })
       .eq('id', notificationId)
@@ -775,7 +781,7 @@ export const notificationDb = {
   },
 
   async markAllAsRead(userId: string) {
-    const { error } = await supabase
+    const { error } = await db
       .from('notifications')
       .update({ read: true })
       .eq('user_id', userId)
@@ -786,7 +792,7 @@ export const notificationDb = {
   },
 
   async delete(notificationId: string) {
-    const { error } = await supabase
+    const { error } = await db
       .from('notifications')
       .delete()
       .eq('id', notificationId);
@@ -809,7 +815,7 @@ export const customerDb = {
     notes?: string;
     organization_id: string;
   }) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('customers')
       .insert(customerData)
       .select()
@@ -820,7 +826,7 @@ export const customerDb = {
   },
 
   async getById(id: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('customers')
       .select('*')
       .eq('id', id)
@@ -831,7 +837,7 @@ export const customerDb = {
   },
 
   async getByOrganization(organizationId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('customers')
       .select('*')
       .eq('organization_id', organizationId)
@@ -848,7 +854,7 @@ export const customerDb = {
     address?: string;
     notes?: string;
   }) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('customers')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -860,7 +866,7 @@ export const customerDb = {
   },
 
   async delete(id: string) {
-    const { error } = await supabase
+    const { error } = await db
       .from('customers')
       .delete()
       .eq('id', id);
@@ -870,7 +876,7 @@ export const customerDb = {
   },
 
   async getTaskStats(customerId: string) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('tasks')
       .select('status')
       .eq('customer_id', customerId);
@@ -898,7 +904,7 @@ export const webhookDb = {
     created_by: string;
   }) {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('webhooks')
       .insert(webhook)
       .select()
@@ -910,7 +916,7 @@ export const webhookDb = {
 
   async getById(id: string) {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('webhooks')
       .select('*')
       .eq('id', id)
@@ -922,7 +928,7 @@ export const webhookDb = {
 
   async getByOrganization(organizationId: string) {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('webhooks')
       .select('*')
       .eq('organization_id', organizationId)
@@ -934,7 +940,7 @@ export const webhookDb = {
 
   async getActiveByOrganization(organizationId: string) {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('webhooks')
       .select('*')
       .eq('organization_id', organizationId)
@@ -952,7 +958,7 @@ export const webhookDb = {
     active?: boolean;
   }) {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('webhooks')
       .update(updates)
       .eq('id', id)
@@ -965,7 +971,7 @@ export const webhookDb = {
 
   async delete(id: string) {
     const supabase = getSupabaseClient();
-    const { error } = await supabase
+    const { error } = await db
       .from('webhooks')
       .delete()
       .eq('id', id);
@@ -984,7 +990,7 @@ export const webhookDb = {
     next_retry_at?: string;
   }) {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('webhook_logs')
       .insert(log)
       .select()
@@ -996,7 +1002,7 @@ export const webhookDb = {
 
   async getLogs(webhookId: string, limit: number = 50) {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('webhook_logs')
       .select('*')
       .eq('webhook_id', webhookId)
@@ -1009,7 +1015,7 @@ export const webhookDb = {
 
   async getFailedLogs() {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('webhook_logs')
       .select('*')
       .eq('success', false)
@@ -1028,7 +1034,7 @@ export const webhookDb = {
     next_retry_at?: string | null;
   }) {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('webhook_logs')
       .update(updates)
       .eq('id', id)

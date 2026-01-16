@@ -2,32 +2,56 @@
 
 ## 📋 Test Öncesi Hazırlık
 
-### **Seçenek 1: Local Supabase (Önerilen)**
+### **Seçenek 1: Test Project (Supabase Dashboard) - ÖNERİLEN ✅**
+
+**Adımlar:**
+
+1. **Yeni Test Project Oluştur:**
+   - https://supabase.com/dashboard
+   - "New Project" → "TaskFlow-Test"
+   - Region seç, şifre belirle
+   - Create Project (2-3 dk bekle)
+
+2. **Schema'yı Kopyala:**
+   - Ana project'te: SQL Editor → `schema.sql` dosyasını çalıştır
+   - Test project'te: SQL Editor → Aynı schema'yı yapıştır ve çalıştır
+
+3. **RLS Migration'ı Çalıştır:**
+   - Test project → SQL Editor
+   - `supabase/migrations/20260114_enable_rls_all_tables.sql` dosyasını aç
+   - Tüm içeriği kopyala-yapıştır
+   - Run (F5)
+
+4. **Test Environment Variables:**
+   ```env
+   # .env.local.test (yeni dosya oluştur)
+   NEXT_PUBLIC_SUPABASE_URL=https://xxx-test.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (test project)
+   SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (test project)
+   NEXTAUTH_SECRET=test-secret-key-123
+   NEXTAUTH_URL=http://localhost:3000
+   ```
+
+5. **Test Ortamını Başlat:**
+   ```bash
+   # .env.local'i .env.local.backup olarak kaydet
+   mv .env.local .env.local.backup
+   
+   # Test env'i kullan
+   mv .env.local.test .env.local
+   
+   # Uygulamayı başlat
+   npm run dev
+   ```
+
+### **Seçenek 2: Direkt Production'da Test (Riskli ⚠️)**
+
+**Sadece çok emin olduğunda kullan!**
 
 ```bash
-# 1. Supabase CLI kur
-npm install -g supabase
-
-# 2. Supabase başlat
-cd c:\TaskFlow
-npx supabase init
-npx supabase start
-
-# 3. Migration'ı çalıştır
-npx supabase db push
-
-# 4. .env.local'i güncelle (test için)
-# NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
-# NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (local key)
-# SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (local key)
-```
-
-### **Seçenek 2: Test Project (Supabase Dashboard)**
-
-```bash
-# 1. Supabase Dashboard'da yeni project oluştur
-# 2. SQL Editor'de migration'ı çalıştır
-# 3. .env.local'i test project'e bağla
+# 1. Production Supabase'de migration'ı çalıştır
+# 2. Hemen test et
+# 3. Sorun varsa rollback yap
 ```
 
 ---

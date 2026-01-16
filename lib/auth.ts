@@ -1,6 +1,7 @@
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { syncUserToSupabaseAuth } from '@/lib/supabase-auth';
 
 // Lazy import - only load at runtime
 function getUserDb() {
@@ -79,6 +80,14 @@ export const authOptions: NextAuthOptions = {
             token.organizationId = dbUser.organization_id; // Now properly nullable
             token.role = dbUser.role;
             token.needsOnboarding = false;
+            
+            // Sync user to Supabase Auth for RLS compatibility
+            // This ensures auth.uid() works in RLS policies
+            await syncUserToSupabaseAuth(
+              dbUser.id,
+              token.email as string,
+              token.name as string || 'User'
+            );
           } else {
             // User not in database - needs onboarding
             token.needsOnboarding = true;
